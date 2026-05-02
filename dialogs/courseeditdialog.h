@@ -26,6 +26,9 @@ public:
                       const QString &location, const QString &examTime,
                       int start, int end);
 
+private slots:
+    void onAccepted();
+
 private:
     QLineEdit *nameEdit;
     QLineEdit *teacherEdit;

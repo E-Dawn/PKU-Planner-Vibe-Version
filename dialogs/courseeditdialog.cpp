@@ -5,11 +5,22 @@
 CourseEditDialog::CourseEditDialog(int defaultStart, int defaultEnd, QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle("课程编辑");
+    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_TranslucentBackground);
+    
+    QFrame *container=new QFrame;
+    container->setStyleSheet(R"(
+    QFrame{
+        background:white;
+        border-radius:20px;
+    }
+    )");
+    
+    QVBoxLayout *root=new QVBoxLayout(this);
+    root->setContentsMargins(20,20,20,20);
+    root->addWidget(container);
+    
     setStyleSheet(R"(
-        QDialog {
-            background: white;
-        }
         QLineEdit {
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -26,7 +37,7 @@ CourseEditDialog::CourseEditDialog(int defaultStart, int defaultEnd, QWidget *pa
         }
     )");
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout(container);
     QFormLayout *formLayout = new QFormLayout();
 
     nameEdit = new QLineEdit();
@@ -52,13 +63,21 @@ CourseEditDialog::CourseEditDialog(int defaultStart, int defaultEnd, QWidget *pa
     formLayout->addRow("开始节次:", startCombo);
     formLayout->addRow("结束节次:", endCombo);
 
+    // 当课程名称文本变化时，恢复样式
+    connect(nameEdit, &QLineEdit::textChanged, this, [this]() {
+        if (!nameEdit->text().trimmed().isEmpty()) {
+            nameEdit->setStyleSheet("");
+            nameEdit->setPlaceholderText("");
+        }
+    });
+
     mainLayout->addLayout(formLayout);
 
     QDialogButtonBox *buttons = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel
     );
     
-    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::accepted, this, &CourseEditDialog::onAccepted);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     
     mainLayout->addWidget(buttons);
@@ -97,4 +116,16 @@ void CourseEditDialog::setCourseData(const QString &name, const QString &teacher
     examEdit->setText(examTime);
     startCombo->setCurrentIndex(start - 1);
     endCombo->setCurrentIndex(end - 1);
+}
+
+void CourseEditDialog::onAccepted() {
+    if (nameEdit->text().trimmed().isEmpty()) {
+        // 课程名称为空，显示错误提示
+        nameEdit->setStyleSheet("border: 2px solid red; border-radius: 8px; padding: 8px;");
+        nameEdit->setPlaceholderText("课程名称不能为空！");
+        nameEdit->setFocus();
+        return;
+    }
+    // 验证通过，接受对话框
+    accept();
 }

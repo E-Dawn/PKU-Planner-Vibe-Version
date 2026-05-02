@@ -2,6 +2,7 @@
 #define TODOPAGE_H
 
 #include <QWidget>
+#include <QComboBox>
 
 class QTableView;
 class TaskModel;
@@ -16,6 +17,7 @@ public:
 private:
     TaskModel *model;
     QTableView *table;
+    QComboBox *courseFilter;
 
     QWidget* createFilterBar();
 };

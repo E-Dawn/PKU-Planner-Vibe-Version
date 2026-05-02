@@ -19,9 +19,11 @@ CourseCellWidget::CourseCellWidget(int row, int col, QWidget *parent)
         QFrame {
             background:#FAFAFA;
             border-radius:10px;
+            border:1px solid transparent;
         }
         QFrame:hover {
-            background:#FFEAEA;
+            background:#FDECEC;
+            border:1px solid #8B1E2D;
         }
     )");
 
@@ -31,16 +33,18 @@ CourseCellWidget::CourseCellWidget(int row, int col, QWidget *parent)
     title = new QLabel("");
     title->setStyleSheet("font-weight:bold; font-size:12px;");
     title->setWordWrap(true);
+    title->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     info = new QLabel("");
     info->setStyleSheet("font-size:11px; color:#666;");
     info->setWordWrap(true);
+    info->setAttribute(Qt::WA_TransparentForMouseEvents);
 
     layout->addWidget(title);
     layout->addWidget(info);
 }
 
-void CourseCellWidget::setCourse(QString name, QString location, QString teacher, int index)
+void CourseCellWidget::setCourse(QString name, QString location, QString teacher, int index, int daysLeft)
 {
     m_index = index;
     title->setText(name);
@@ -49,15 +53,36 @@ void CourseCellWidget::setCourse(QString name, QString location, QString teacher
         location + "\n" + teacher
     );
 
-    setStyleSheet(R"(
+    QString bg = "#E8F0FF";
+    QString hover = "#D6E4FF";
+    QString border = "transparent";
+    QString hoverBorder = "#2B579A";
+
+    if (daysLeft != -999) {
+        if (daysLeft < 0) {
+            bg = "#FFCDD2"; hover = "#FFCDD2"; hoverBorder = "#D32F2F";
+        } else if (daysLeft == 0) {
+            bg = "#FFAB91"; hover = "#FFAB91"; hoverBorder = "#E64A19";
+        } else if (daysLeft <= 3) {
+            bg = "#FFCC80"; hover = "#FFCC80"; hoverBorder = "#F57C00";
+        } else if (daysLeft <= 7) {
+            bg = "#FFF59D"; hover = "#FFF59D"; hoverBorder = "#FBC02D";
+        } else {
+            bg = "white"; hover = "#F5F5F5"; hoverBorder = "#CCC";
+        }
+    }
+
+    setStyleSheet(QString(R"(
         QFrame {
-            background: #E8F0FF;
+            background: %1;
             border-radius: 10px;
+            border:1px solid %3;
         }
         QFrame:hover {
-            background: #D6E4FF;
+            background: %2;
+            border:1px solid %4;
         }
-    )");
+    )").arg(bg).arg(hover).arg(border).arg(hoverBorder));
 }
 
 void CourseCellWidget::enterEvent(QEnterEvent *)

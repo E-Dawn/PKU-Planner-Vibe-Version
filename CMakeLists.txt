@@ -12,6 +12,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# 为MSVC添加 /Zc:__cplusplus 选项
+if(MSVC)
+    add_compile_options(/Zc:__cplusplus)
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
@@ -30,6 +35,10 @@ set(PROJECT_SOURCES
     components/coursecellwidget.h
     dialogs/courseeditdialog.cpp
     dialogs/courseeditdialog.h
+    dialogs/courseactiondialog.cpp
+    dialogs/courseactiondialog.h
+    dialogs/taskeditdialog.cpp
+    dialogs/taskeditdialog.h
     models/taskmodel.cpp
     models/taskmodel.h
     models/task.h

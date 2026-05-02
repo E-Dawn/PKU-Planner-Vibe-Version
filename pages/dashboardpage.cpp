@@ -10,6 +10,11 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QDateTime>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QIODevice>
 
 DashboardPage::DashboardPage(QWidget *parent)
     : QWidget(parent)
@@ -215,21 +220,91 @@ QWidget* DashboardPage::createRightPanel()
     // DDL摘要卡
     QFrame *ddlCard = new QFrame;
     ddlCard->setStyleSheet("background:white; border-radius:16px;");
-    QVBoxLayout *ddlLayout = new QVBoxLayout(ddlCard);
+    ddlLayout = new QVBoxLayout(ddlCard);
     
     QLabel *ddlTitle = new QLabel("DDL提醒");
-    ddlTitle->setStyleSheet("font-weight:bold;");
+    ddlTitle->setStyleSheet("font-weight:bold; font-size:16px; margin-bottom: 8px;");
     ddlLayout->addWidget(ddlTitle);
     
-    QLabel *ddlContent = new QLabel("暂无DDL");
-    ddlContent->setStyleSheet("color:#999;");
-    ddlLayout->addWidget(ddlContent);
+    updateDDLWidget();
 
     layout->addWidget(todayCard);
     layout->addWidget(ddlCard);
     layout->addStretch();
 
     return widget;
+}
+
+void DashboardPage::updateDDLWidget()
+{
+    // Clear old items except title
+    while (QLayoutItem *child = ddlLayout->takeAt(1)) {
+        if(child->widget()) delete child->widget();
+        delete child;
+    }
+    
+    QFile file("tasks.json");
+    bool hasDDL = false;
+    
+    if (file.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        if (doc.isArray()) {
+            QJsonArray arr = doc.array();
+            // Sort to find the nearest and upcoming DDLs
+            std::vector<std::pair<QString, int>> ddls;
+            
+            for (auto item : arr) {
+                QJsonObject obj = item.toObject();
+                if (!obj["completed"].toBool()) {
+                    QDateTime deadline = QDateTime::fromString(obj["deadline"].toString(), Qt::ISODate);
+                    int daysLeft = QDateTime::currentDateTime().daysTo(deadline);
+                    ddls.push_back({obj["course"].toString() + " - " + obj["title"].toString(), daysLeft});
+                }
+            }
+            
+            std::sort(ddls.begin(), ddls.end(), [](const auto& a, const auto& b) {
+                return a.second < b.second;
+            });
+            
+            int count = 0;
+            for (auto& ddl : ddls) {
+                if (count >= 5) break; 
+                QFrame *itemFrame = new QFrame;
+                itemFrame->setStyleSheet("background:#FDFDFD; border-radius:10px; border:1px solid #EEE; padding:6px; margin-bottom:4px;");
+                QVBoxLayout *vl = new QVBoxLayout(itemFrame);
+                vl->setContentsMargins(6,6,6,6);
+                
+                QLabel *nameLbl = new QLabel(ddl.first);
+                nameLbl->setStyleSheet("font-weight:bold; font-size:13px; color:#333; margin:0px;");
+                nameLbl->setWordWrap(true);
+                
+                QLabel *timeLbl = new QLabel;
+                if (ddl.second < 0) {
+                    timeLbl->setText("已逾期");
+                    timeLbl->setStyleSheet("color:#D32F2F; font-size:12px; font-weight:bold; margin:0px;");
+                } else if (ddl.second == 0) {
+                    timeLbl->setText("今晚截止");
+                    timeLbl->setStyleSheet("color:#E64A19; font-size:12px; font-weight:bold; margin:0px;");
+                } else {
+                    timeLbl->setText(QString("剩余 %1 天").arg(ddl.second));
+                    timeLbl->setStyleSheet("color:#8B1E2D; font-size:12px; margin:0px;");
+                }
+                
+                vl->addWidget(nameLbl);
+                vl->addWidget(timeLbl);
+                
+                ddlLayout->addWidget(itemFrame);
+                hasDDL = true;
+                count++;
+            }
+        }
+    }
+    
+    if (!hasDDL) {
+        QLabel *empty = new QLabel("暂无DDL");
+        empty->setStyleSheet("color:#999;");
+        ddlLayout->addWidget(empty);
+    }
 }
 
 void DashboardPage::initGrid()
@@ -286,23 +361,34 @@ for(int row=0; row<12; row++)
 #include <QJsonObject>
 #include <QFile>
 #include "../dialogs/courseeditdialog.h"
-#include <QMessageBox>
+#include "../dialogs/courseactiondialog.h"
+#include "../dialogs/taskeditdialog.h"
 
 void DashboardPage::saveCourses()
 {
-    QJsonArray arr;
+    QFile file("courses.json");
 
-    for(auto &c : courses)
+    if(!file.exists())
     {
-        arr.append(c.toJson());
+        if (!file.open(QIODevice::WriteOnly)) {
+            return;
+        }
+        file.close();
     }
 
-    QJsonDocument doc(arr);
-
-    QFile file("courses.json");
     if(file.open(QIODevice::WriteOnly))
     {
+        QJsonArray arr;
+
+        for(auto &c:courses)
+        {
+            arr.append(c.toJson());
+        }
+
+        QJsonDocument doc(arr);
+
         file.write(doc.toJson());
+        file.close();
     }
 }
 
@@ -327,6 +413,29 @@ void DashboardPage::loadCourses()
     }
 }
 
+int DashboardPage::getNearestDDL(const QString& courseName)
+{
+    int minDays = 9999;
+    QFile file("tasks.json");
+    if (file.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        if (doc.isArray()) {
+            QJsonArray arr = doc.array();
+            for (auto item : arr) {
+                QJsonObject obj = item.toObject();
+                if (obj["course"].toString() == courseName && !obj["completed"].toBool()) {
+                    QDateTime deadline = QDateTime::fromString(obj["deadline"].toString(), Qt::ISODate);
+                    int daysLeft = QDateTime::currentDateTime().daysTo(deadline);
+                    if (daysLeft < minDays) {
+                        minDays = daysLeft;
+                    }
+                }
+            }
+        }
+    }
+    return minDays == 9999 ? -999 : minDays;
+}
+
 void DashboardPage::renderCourses()
 {
     QLayoutItem *child;
@@ -335,13 +444,15 @@ void DashboardPage::renderCourses()
         delete child;
     }
 
+    updateDDLWidget();
     initGrid();
 
     int index = 0;
     for(auto &c : courses)
     {
+        int daysLeft = getNearestDDL(c.name);
         CourseCellWidget *cell = new CourseCellWidget(c.startPeriod, c.day);
-        cell->setCourse(c.name, c.location, c.teacher, index);
+        cell->setCourse(c.name, c.location, c.teacher, index, daysLeft);
         
         connect(cell, &CourseCellWidget::editCourseRequested,
                 this, &DashboardPage::editCourse);
@@ -386,17 +497,10 @@ void DashboardPage::editCourse(int index)
     
     Course &c = courses[index];
     
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("操作");
-    msgBox.setText("请选择操作");
+    CourseActionDialog actionDialog(this);
+    actionDialog.exec();
     
-    QPushButton *editBtn = msgBox.addButton("编辑", QMessageBox::ActionRole);
-    QPushButton *deleteBtn = msgBox.addButton("删除", QMessageBox::ActionRole);
-    QPushButton *cancelBtn = msgBox.addButton("取消", QMessageBox::RejectRole);
-    
-    msgBox.exec();
-    
-    if (msgBox.clickedButton() == editBtn) {
+    if (actionDialog.editSelected()) {
         CourseEditDialog dialog(c.startPeriod, c.endPeriod);
         dialog.setWindowTitle("编辑课程");
         dialog.setCourseData(c.name, c.teacher, c.location, c.examTime, c.startPeriod, c.endPeriod);
@@ -413,9 +517,43 @@ void DashboardPage::editCourse(int index)
             saveCourses();
             renderCourses();
         }
-    } else if (msgBox.clickedButton() == deleteBtn) {
+    } else if (actionDialog.deleteSelected()) {
         courses.erase(courses.begin() + index);
         saveCourses();
         renderCourses();
+    } else if (actionDialog.ddlSelected()) {
+        TaskEditDialog taskDialog(this, c.name);
+        if (taskDialog.exec() == QDialog::Accepted) {
+            Task newTask;
+            newTask.course = taskDialog.getCourseName();
+            newTask.title = taskDialog.getTitle();
+            newTask.deadline = taskDialog.getDeadline();
+            newTask.priority = taskDialog.getPriority();
+            // Assuming saveTasks or dealing with tasks.json
+            QFile taskFile("tasks.json");
+            QJsonArray taskArr;
+            if (taskFile.open(QIODevice::ReadOnly)) {
+                QJsonDocument doc = QJsonDocument::fromJson(taskFile.readAll());
+                if (doc.isArray()) {
+                    taskArr = doc.array();
+                }
+                taskFile.close();
+            }
+            QJsonObject taskObj;
+            taskObj["course"] = newTask.course;
+            taskObj["title"] = newTask.title;
+            taskObj["deadline"] = newTask.deadline.toString(Qt::ISODate);
+            taskObj["priority"] = newTask.priority;
+            taskObj["completed"] = false;
+            // Also estimated_hours if you want
+            taskArr.append(taskObj);
+
+            if (taskFile.open(QIODevice::WriteOnly)) {
+                QJsonDocument doc(taskArr);
+                taskFile.write(doc.toJson());
+                taskFile.close();
+            }
+            renderCourses();
+        }
     }
 }

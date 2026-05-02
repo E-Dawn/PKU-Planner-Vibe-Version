@@ -2,8 +2,10 @@
 #define DASHBOARDPAGE_H
 
 #include <QWidget>
+#include <QVBoxLayout>
 
 #include "../models/course.h"
+#include "../models/task.h"
 #include <vector>
 
 class QGridLayout;
@@ -30,7 +32,9 @@ private:
     void saveCourses();
     void loadCourses();
     void renderCourses();
-
+    
+    int getNearestDDL(const QString& courseName);
+    
     QGridLayout *grid;
 
     QLabel *weekLabel;
@@ -44,7 +48,10 @@ private:
     QWidget* createTopBar();
     QWidget* createBottomStats();
     QWidget* createRightPanel();
-
+    
+    QVBoxLayout *ddlLayout;
+    
+    void updateDDLWidget();
     void updateWeekInfo();
 };
 

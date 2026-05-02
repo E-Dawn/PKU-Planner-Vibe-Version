@@ -8,6 +8,10 @@
 #include <QComboBox>
 #include <QHeaderView>
 #include <QFrame>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 TodoPage::TodoPage(QWidget *parent)
     : QWidget(parent)
@@ -64,8 +68,25 @@ QWidget* TodoPage::createFilterBar()
     QLineEdit *search = new QLineEdit;
     search->setPlaceholderText("搜索任务...");
 
-    QComboBox *courseFilter = new QComboBox;
-    courseFilter->addItems({"全部课程", "数据结构", "操作系统"});
+    courseFilter = new QComboBox;
+    courseFilter->addItems({"全部课程"});
+    
+    QFile courseFile("courses.json");
+    if (courseFile.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(courseFile.readAll());
+        if (doc.isArray()) {
+            QJsonArray courseArray = doc.array();
+            for (const auto &item : courseArray) {
+                if (item.isObject()) {
+                    QJsonObject courseObj = item.toObject();
+                    QString courseName = courseObj["name"].toString();
+                    if (!courseName.isEmpty()) {
+                        courseFilter->addItem(courseName);
+                    }
+                }
+            }
+        }
+    }
 
     QComboBox *timeFilter = new QComboBox;
     timeFilter->addItems({"全部时间", "今天", "本周", "逾期"});
