@@ -10,8 +10,8 @@
 #include <QLineEdit>
 #include <QDialogButtonBox>
 
-CourseCellWidget::CourseCellWidget(QWidget *parent)
-    : QFrame(parent)
+CourseCellWidget::CourseCellWidget(int row, int col, QWidget *parent)
+    : QFrame(parent), m_row(row), m_col(col), m_index(-1)
 {
     setMinimumSize(80, 60);
 
@@ -30,18 +30,24 @@ CourseCellWidget::CourseCellWidget(QWidget *parent)
 
     title = new QLabel("");
     title->setStyleSheet("font-weight:bold; font-size:12px;");
+    title->setWordWrap(true);
 
     info = new QLabel("");
     info->setStyleSheet("font-size:11px; color:#666;");
+    info->setWordWrap(true);
 
     layout->addWidget(title);
     layout->addWidget(info);
 }
 
-void CourseCellWidget::setCourse(QString name, QString location)
+void CourseCellWidget::setCourse(QString name, QString location, QString teacher, int index)
 {
+    m_index = index;
     title->setText(name);
-    info->setText(location);
+
+    info->setText(
+        location + "\n" + teacher
+    );
 
     setStyleSheet(R"(
         QFrame {
@@ -60,8 +66,7 @@ void CourseCellWidget::enterEvent(QEnterEvent *)
         if(!title->text().isEmpty())
         {
             QToolTip::showText(cursor().pos(),
-                title->text() + "\n地点: " + info->text() +
-                "\nDDL: 3天后");
+                title->text() + "\n信息: " + info->text());
         }
     });
 }
@@ -73,33 +78,15 @@ void CourseCellWidget::leaveEvent(QEvent *)
 
 void CourseCellWidget::mouseDoubleClickEvent(QMouseEvent *)
 {
-    QDialog dialog;
-    dialog.setWindowTitle("编辑课程");
-
-    QFormLayout *layout = new QFormLayout(&dialog);
-
-    QLineEdit *nameEdit = new QLineEdit(title->text());
-    QLineEdit *teacherEdit = new QLineEdit();
-    QLineEdit *roomEdit = new QLineEdit(info->text());
-    QLineEdit *examEdit = new QLineEdit();
-
-    layout->addRow("课程名称", nameEdit);
-    layout->addRow("教师", teacherEdit);
-    layout->addRow("教室", roomEdit);
-    layout->addRow("考试时间", examEdit);
-
-    QDialogButtonBox *buttons = new QDialogButtonBox(
-        QDialogButtonBox::Ok | QDialogButtonBox::Cancel
-    );
-
-    layout->addWidget(buttons);
-
-    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-    if(dialog.exec() == QDialog::Accepted)
+    if(title->text().isEmpty())
     {
-        title->setText(nameEdit->text());
-        info->setText(roomEdit->text());
+        emit createCourseRequested(m_row, m_col);
+    }
+    else
+    {
+        if(m_index != -1)
+        {
+            emit editCourseRequested(m_index);
+        }
     }
 }

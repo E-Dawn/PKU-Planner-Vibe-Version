@@ -28,9 +28,12 @@ set(PROJECT_SOURCES
     pages/todopage.h
     components/coursecellwidget.cpp
     components/coursecellwidget.h
+    dialogs/courseeditdialog.cpp
+    dialogs/courseeditdialog.h
     models/taskmodel.cpp
     models/taskmodel.h
     models/task.h
+    models/course.h
 )
 
 qt_add_executable(PKUPlanner

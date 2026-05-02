@@ -9,7 +9,7 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QTimer>
-#include <QTime>
+#include <QDateTime>
 
 DashboardPage::DashboardPage(QWidget *parent)
     : QWidget(parent)
@@ -53,6 +53,8 @@ DashboardPage::DashboardPage(QWidget *parent)
     mainLayout->addWidget(createBottomStats());
 
     initGrid();
+    loadCourses();
+    renderCourses();
 }
 
 QWidget* DashboardPage::createTopBar()
@@ -170,14 +172,18 @@ QWidget* DashboardPage::createBottomStats()
         if(t == "当前时间")
         {
             timeLabel = num;
+            timeLabel->setStyleSheet("font-size:14px;font-weight:bold;color:#8B1E2D;");
 
             QTimer *timer = new QTimer(this);
             connect(timer,&QTimer::timeout,this,[=](){
                 timeLabel->setText(
-                    QTime::currentTime().toString("hh:mm:ss")
+                    QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")
                 );
             });
             timer->start(1000);
+            timeLabel->setText(
+                QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")
+            );
         }
 
         layout->addWidget(card);
@@ -239,29 +245,177 @@ void DashboardPage::initGrid()
         grid->addWidget(label, 0, col+1);
     }
 
-    // 时间
-    for(int row=0; row<10; row++)
-    {
-        QLabel *time = new QLabel(QString("%1").arg(row+1));
-        time->setAlignment(Qt::AlignCenter);
-        time->setStyleSheet("color:#aaa; font-size:11px;");
-        grid->addWidget(time, row+1, 0);
-    }
+// 时间（节数 + 时间段）
+QStringList timeSlots = {
+    "8:00-8:50",    // 第1节
+    "9:00-9:50",    // 第2节
+    "10:10-11:00",  // 第3节
+    "11:10-12:00",  // 第4节
+    "13:00-13:50",  // 第5节
+    "14:00-14:50",  // 第6节
+    "15:10-16:00",  // 第7节
+    "16:10-17:00",  // 第8节
+    "17:10-18:00",  // 第9节
+    "18:40-19:30",  // 第10节
+    "19:40-20:30",  // 第11节
+    "20:40-21:30"   // 第12节
+};
 
-    // 单元格
-    for(int row=0; row<10; row++)
+for(int row=0; row<12; row++)
+{
+    QLabel *timeLabel = new QLabel(QString("%1\n%2").arg(row+1).arg(timeSlots[row]));
+    timeLabel->setAlignment(Qt::AlignCenter);
+    timeLabel->setStyleSheet("color:#aaa; font-size:10px; line-height:1.2;");
+    grid->addWidget(timeLabel, row+1, 0);
+}
+
+    // Initialize all cells as empty first to provide a clickable background
+    for(int row=0; row<12; row++)
     {
         for(int col=0; col<7; col++)
         {
-            CourseCellWidget *cell = new CourseCellWidget;
-            cell->setFixedHeight(50);
+            CourseCellWidget *cell = new CourseCellWidget(row+1, col+1);
             grid->addWidget(cell, row+1, col+1);
+            connect(cell, &CourseCellWidget::createCourseRequested, this, &DashboardPage::createCourse);
         }
     }
+}
 
-    // 示例课程
-    CourseCellWidget *c = new CourseCellWidget;
-    c->setCourse("数据结构", "理教208");
-    c->setFixedHeight(100);
-    grid->addWidget(c, 1, 1, 2, 1); // 跨2行
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
+#include "../dialogs/courseeditdialog.h"
+#include <QMessageBox>
+
+void DashboardPage::saveCourses()
+{
+    QJsonArray arr;
+
+    for(auto &c : courses)
+    {
+        arr.append(c.toJson());
+    }
+
+    QJsonDocument doc(arr);
+
+    QFile file("courses.json");
+    if(file.open(QIODevice::WriteOnly))
+    {
+        file.write(doc.toJson());
+    }
+}
+
+void DashboardPage::loadCourses()
+{
+    QFile file("courses.json");
+
+    if(!file.open(QIODevice::ReadOnly))
+        return;
+
+    QJsonDocument doc =
+        QJsonDocument::fromJson(file.readAll());
+
+    QJsonArray arr = doc.array();
+
+    courses.clear();
+    for(auto item : arr)
+    {
+        courses.push_back(
+            Course::fromJson(item.toObject())
+        );
+    }
+}
+
+void DashboardPage::renderCourses()
+{
+    QLayoutItem *child;
+    while ((child = grid->takeAt(0)) != nullptr) {
+        delete child->widget();
+        delete child;
+    }
+
+    initGrid();
+
+    int index = 0;
+    for(auto &c : courses)
+    {
+        CourseCellWidget *cell = new CourseCellWidget(c.startPeriod, c.day);
+        cell->setCourse(c.name, c.location, c.teacher, index);
+        
+        connect(cell, &CourseCellWidget::editCourseRequested,
+                this, &DashboardPage::editCourse);
+
+        grid->addWidget(
+            cell,
+            c.startPeriod,
+            c.day,
+            c.endPeriod - c.startPeriod + 1,
+            1
+        );
+        index++;
+    }
+}
+
+void DashboardPage::createCourse(int row, int col)
+{
+    CourseEditDialog dialog(row, row);
+    dialog.setWindowTitle("添加课程");
+    
+    if (dialog.exec() == QDialog::Accepted) {
+        Course c;
+        c.name = dialog.getName();
+        c.teacher = dialog.getTeacher();
+        c.location = dialog.getLocation();
+        c.examTime = dialog.getExamTime();
+        
+        c.startPeriod = dialog.getStart();
+        c.endPeriod = dialog.getEnd();
+        c.day = col;
+        
+        courses.push_back(c);
+        
+        saveCourses();
+        renderCourses();
+    }
+}
+
+void DashboardPage::editCourse(int index)
+{
+    if (index < 0 || index >= courses.size()) return;
+    
+    Course &c = courses[index];
+    
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("操作");
+    msgBox.setText("请选择操作");
+    
+    QPushButton *editBtn = msgBox.addButton("编辑", QMessageBox::ActionRole);
+    QPushButton *deleteBtn = msgBox.addButton("删除", QMessageBox::ActionRole);
+    QPushButton *cancelBtn = msgBox.addButton("取消", QMessageBox::RejectRole);
+    
+    msgBox.exec();
+    
+    if (msgBox.clickedButton() == editBtn) {
+        CourseEditDialog dialog(c.startPeriod, c.endPeriod);
+        dialog.setWindowTitle("编辑课程");
+        dialog.setCourseData(c.name, c.teacher, c.location, c.examTime, c.startPeriod, c.endPeriod);
+        
+        if (dialog.exec() == QDialog::Accepted) {
+            c.name = dialog.getName();
+            c.teacher = dialog.getTeacher();
+            c.location = dialog.getLocation();
+            c.examTime = dialog.getExamTime();
+            c.startPeriod = dialog.getStart();
+            c.endPeriod = dialog.getEnd();
+            // c.day remains unchanged from edit interface (unless col added to dialog)
+            
+            saveCourses();
+            renderCourses();
+        }
+    } else if (msgBox.clickedButton() == deleteBtn) {
+        courses.erase(courses.begin() + index);
+        saveCourses();
+        renderCourses();
+    }
 }

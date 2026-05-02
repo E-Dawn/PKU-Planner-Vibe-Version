@@ -3,6 +3,9 @@
 
 #include <QWidget>
 
+#include "../models/course.h"
+#include <vector>
+
 class QGridLayout;
 class QLabel;
 class QProgressBar;
@@ -17,7 +20,17 @@ class DashboardPage : public QWidget
 public:
     explicit DashboardPage(QWidget *parent = nullptr);
 
+public slots:
+    void createCourse(int row, int col);
+    void editCourse(int index); // for editing/deleting
+
 private:
+    std::vector<Course> courses;
+
+    void saveCourses();
+    void loadCourses();
+    void renderCourses();
+
     QGridLayout *grid;
 
     QLabel *weekLabel;
