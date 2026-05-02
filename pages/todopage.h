@@ -3,12 +3,21 @@
 
 #include <QWidget>
 
+class QTableView;
+class TaskModel;
+
 class TodoPage : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit TodoPage(QWidget *parent = nullptr);
+
+private:
+    TaskModel *model;
+    QTableView *table;
+
+    QWidget* createFilterBar();
 };
 
 #endif

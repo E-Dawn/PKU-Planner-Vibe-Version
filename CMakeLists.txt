@@ -28,6 +28,9 @@ set(PROJECT_SOURCES
     pages/todopage.h
     components/coursecellwidget.cpp
     components/coursecellwidget.h
+    models/taskmodel.cpp
+    models/taskmodel.h
+    models/task.h
 )
 
 qt_add_executable(PKUPlanner
@@ -36,9 +39,5 @@ qt_add_executable(PKUPlanner
 )
 
 target_link_libraries(PKUPlanner PRIVATE Qt6::Widgets)
-
-set_target_properties(PKUPlanner PROPERTIES
-    WIN32_EXECUTABLE TRUE
-)
 
 qt_finalize_executable(PKUPlanner)
