@@ -13,7 +13,8 @@
 CourseCellWidget::CourseCellWidget(int row, int col, QWidget *parent)
     : QFrame(parent), m_row(row), m_col(col), m_index(-1)
 {
-    setMinimumSize(80, 60);
+    setMinimumSize(50, 48);               // 覆盖原本的10px最小高度
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     setStyleSheet(R"(
         QFrame {
@@ -28,7 +29,8 @@ CourseCellWidget::CourseCellWidget(int row, int col, QWidget *parent)
     )");
 
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(6,6,6,6);
+    layout->setContentsMargins(4,2,4,2);
+    layout->setSpacing(2);
 
     title = new QLabel("");
     title->setStyleSheet("font-weight:bold; font-size:12px;");
