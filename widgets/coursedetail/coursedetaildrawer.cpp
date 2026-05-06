@@ -124,6 +124,7 @@ void CourseDetailDrawer::setupAnimation()
 {
     anim = new QPropertyAnimation(this, "geometry", this);
     anim->setDuration(250);
+    anim->setEasingCurve(QEasingCurve::InOutQuad);
 }
 
 void CourseDetailDrawer::loadCourse(const Course& course)

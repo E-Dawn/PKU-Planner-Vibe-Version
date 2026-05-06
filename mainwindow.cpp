@@ -18,6 +18,7 @@
 #include "dialogs/taskeditdialog.h"
 #include "dialogs/courseeditdialog.h"
 #include "models/datamanager.h"
+#include "utils/pageanimator.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -59,9 +60,8 @@ MainWindow::MainWindow(QWidget *parent)
     courseDrawer = new CourseDetailDrawer(central);
     courseDrawer->hide();
 
-    // 页面切换
-    connect(sidebar, &SidebarWidget::pageChanged,
-            stack, &QStackedWidget::setCurrentIndex);
+    // Page animator for smooth transitions
+    // Note: sidebar connection will be updated after pages are initialized
     
     // Defer page initialization
     QMetaObject::invokeMethod(this, "initPages", Qt::QueuedConnection);
@@ -120,9 +120,10 @@ void MainWindow::initPages()
             dashboardPage, &DashboardPage::refreshCourseUrgency);
         // Ensure sidebar page change maps to stats page index 2
         connect(sidebar, &SidebarWidget::pageChanged, this, [this, statsPage](int index){
-            // default handlers already connected above; handle stats index separately
+            if (index >= 0 && index < stack->count()) {
+                PageAnimator::slideToIndex(stack, index);
+            }
             if (index == 2) {
-                stack->setCurrentIndex(2);
                 statsPage->refreshData();
             }
         });
@@ -136,7 +137,7 @@ void MainWindow::initPages()
 
 void MainWindow::onNavigateToTodoPage()
 {
-    stack->setCurrentIndex(1);
+    PageAnimator::slideToIndex(stack, 1);
 }
 
 void MainWindow::showCourseDrawer(const Course& course)
@@ -150,7 +151,7 @@ void MainWindow::handleAddTaskRequested(Course course)
 {
     // 切换到待办页面并弹出添加 DDL 对话框，默认课程名为当前课程
     if (todoPage) {
-        stack->setCurrentIndex(1);
+        PageAnimator::slideToIndex(stack, 1);
     }
     TaskEditDialog dlg(this, course.name);
     if (dlg.exec() == QDialog::Accepted) {

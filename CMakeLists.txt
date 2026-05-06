@@ -55,6 +55,7 @@ set(PROJECT_SOURCES
     components/emptystatewidget.cpp
     components/emptystatewidget.h
     utils/pageanimator.h
+    utils/pageanimator.cpp
     dialogs/courseeditdialog.cpp
     dialogs/courseeditdialog.h
     dialogs/courseactiondialog.cpp

@@ -4,6 +4,7 @@
 #include <QFrame>
 #include <QPropertyAnimation>
 #include <QEvent>
+#include <QEasingCurve>
 #include "../../models/course.h"
 
 class CourseHeaderWidget;
