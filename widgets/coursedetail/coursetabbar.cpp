@@ -1,4 +1,5 @@
 #include "coursetabbar.h"
+#include "../../ui/theme.h"
 #include <QHBoxLayout>
 #include <QPushButton>
 
@@ -17,7 +18,7 @@ CourseTabBar::CourseTabBar(QWidget* parent)
     for (QPushButton* b : {infoBtn, taskBtn, fileBtn, statsBtn}) {
         b->setCursor(Qt::PointingHandCursor);
         b->setCheckable(true);
-        b->setStyleSheet("QPushButton{background:white;border:1px solid #E8E8E8;border-radius:8px;padding:6px 10px;} QPushButton:checked{background:#8B1E2D;color:white;}");
+        b->setStyleSheet(QString("QPushButton{background:white;border:1px solid #E8E8E8;border-radius:8px;padding:6px 10px;} QPushButton:checked{background:%1;color:white;}").arg(Theme::PRIMARY));
     }
 
     infoBtn->setChecked(true);

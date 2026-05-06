@@ -62,6 +62,7 @@ private:
     
     void updateDDLWidget();
     void updateWeekInfo();
+    QWidget* createSuggestionCard();
 };
 
 #endif

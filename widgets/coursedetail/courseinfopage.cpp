@@ -1,4 +1,5 @@
 #include "courseinfopage.h"
+#include "../../ui/theme.h"
 
 #include <QFrame>
 #include <QHBoxLayout>
@@ -80,8 +81,8 @@ CourseInfoPage::CourseInfoPage(QWidget* parent)
     editBtn = new QPushButton("编辑课程", pageHeader);
     editBtn->setCursor(Qt::PointingHandCursor);
     editBtn->setStyleSheet(
-        "QPushButton{background:white;border:1px solid #EFEAEA;border-radius:10px;padding:6px 12px;color:#4B3A35;}"
-        "QPushButton:hover{border:1px solid #8B1E2D;}"
+        QString("QPushButton{background:white;border:1px solid %1;border-radius:10px;padding:6px 12px;color:#4B3A35;}"
+        "QPushButton:hover{border:1px solid %2;}").arg(Theme::BORDER).arg(Theme::PRIMARY)
     );
 
     headerLayout->addWidget(titleLabel);
@@ -124,24 +125,24 @@ QWidget* CourseInfoPage::createProgressCard()
     title->setStyleSheet("font-size:15px;font-weight:700;color:#222;");
 
     progressLabel = new QLabel("0%", card);
-    progressLabel->setStyleSheet("font-size:28px;font-weight:800;color:#8B1E2D;");
+    progressLabel->setStyleSheet(QString("font-size:28px;font-weight:800;color:%1;").arg(Theme::PRIMARY));
 
     progressBar = new QProgressBar(card);
     progressBar->setRange(0, 100);
     progressBar->setValue(0);
     progressBar->setTextVisible(false);
     progressBar->setFixedHeight(12);
-    progressBar->setStyleSheet(R"(
+    progressBar->setStyleSheet(QString(R"(
         QProgressBar {
             border: none;
             background: #F5F5F5;
             border-radius: 6px;
         }
         QProgressBar::chunk {
-            background: #8B1E2D;
+            background: %1;
             border-radius: 6px;
         }
-    )");
+    )").arg(Theme::PRIMARY));
 
     QLabel* detailLabel = new QLabel("0 / 0 tasks completed", card);
     detailLabel->setObjectName("progressDetailLabel");
@@ -246,21 +247,21 @@ QWidget* CourseInfoPage::createNoteCard()
     noteEdit->setPlaceholderText("记录课堂重点、考试提醒、老师要求...");
     noteEdit->setAcceptRichText(true);
     noteEdit->setMinimumHeight(150);
-    noteEdit->setStyleSheet(R"(
+    noteEdit->setStyleSheet(QString(R"(
         QTextEdit {
-            border: 1px solid #EFEAEA;
+            border: 1px solid %1;
             border-radius: 14px;
             background: #FCFBFA;
             padding: 10px;
             color: #2F2926;
             font-size: 13px;
-            selection-background-color: #8B1E2D;
+            selection-background-color: %2;
         }
         QTextEdit:focus {
-            border: 1px solid #8B1E2D;
+            border: 1px solid %2;
             background: white;
         }
-    )");
+    )").arg(Theme::BORDER).arg(Theme::PRIMARY));
 
     layout->addWidget(title);
     layout->addWidget(noteEdit, 1);

@@ -1,5 +1,6 @@
 ﻿#include "taskeditdialog.h"
 #include "../models/datamanager.h"
+#include "../ui/theme.h"
 #include <QVBoxLayout>
 #include <QFormLayout>
 #include <QLineEdit>
@@ -37,13 +38,13 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
     deadlineEdit = new QDateTimeEdit(QDateTime::currentDateTime());
     deadlineEdit->setCalendarPopup(true);
     if (QCalendarWidget *calendar = deadlineEdit->calendarWidget()) {
-        calendar->setStyleSheet(R"(
+        calendar->setStyleSheet(QString(R"(
             QCalendarWidget QWidget {
-                color: #222;
+                color: %1;
                 background: white;
             }
             QCalendarWidget QToolButton {
-                color: #222;
+                color: %1;
                 background: transparent;
                 border: none;
                 font-weight: 600;
@@ -60,15 +61,15 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
             }
             QCalendarWidget QMenu {
                 background: white;
-                color: #222;
+                color: %1;
             }
             QCalendarWidget QAbstractItemView {
-                selection-background-color: #8B1E2D;
+                selection-background-color: %2;
                 selection-color: white;
                 background: white;
-                color: #222;
+                color: %1;
             }
-        )");
+        )").arg(Theme::TEXT_PRIMARY).arg(Theme::PRIMARY));
     }
     priorityCombo = new QComboBox();
     priorityCombo->addItems({"低", "中", "高"});
@@ -110,7 +111,7 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
 
     mainLayout->addWidget(buttons);
 
-    setStyleSheet(R"(
+    setStyleSheet(QString(R"(
         QDialog {
             background: transparent;
         }
@@ -123,7 +124,7 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
             font-size: 13px;
         }
         QLineEdit:focus {
-            border: 2px solid #8B1E2D;
+            border: 2px solid %1;
             background: white;
         }
         QDateTimeEdit {
@@ -135,7 +136,7 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
             font-size: 13px;
         }
         QDateTimeEdit:focus {
-            border: 2px solid #8B1E2D;
+            border: 2px solid %1;
         }
         QComboBox {
             border: 1px solid #E8DADA;
@@ -146,7 +147,7 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
             font-size: 13px;
         }
         QComboBox:focus {
-            border: 2px solid #8B1E2D;
+            border: 2px solid %1;
         }
         QSpinBox {
             border: 1px solid #E8DADA;
@@ -157,7 +158,7 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
             font-size: 13px;
         }
         QSpinBox:focus {
-            border: 2px solid #8B1E2D;
+            border: 2px solid %1;
         }
         QCheckBox {
             color: #444;
@@ -172,11 +173,11 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
             background: white;
         }
         QCheckBox::indicator:checked {
-            background: #8B1E2D;
-            border: 2px solid #8B1E2D;
+            background: %1;
+            border: 2px solid %1;
         }
         QPushButton {
-            background: #8B1E2D;
+            background: %1;
             color: white;
             border-radius: 10px;
             padding: 10px 20px;
@@ -185,10 +186,10 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
             border: none;
         }
         QPushButton:hover {
-            background: #7A1A25;
+            background: %2;
         }
         QPushButton:pressed {
-            background: #6A1520;
+            background: %3;
         }
         QDialogButtonBox QPushButton[role='RejectRole'] {
             background: #F5F5F5;
@@ -203,7 +204,7 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
             font-size: 13px;
             font-weight: 500;
         }
-    )");
+    )").arg(Theme::PRIMARY).arg(Theme::PRIMARY_DARK).arg("#6A1520"));
 }
 
 QString TaskEditDialog::getTitle() const {

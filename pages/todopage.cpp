@@ -1,7 +1,9 @@
 ﻿#include "todopage.h"
 #include "../models/datamanager.h"
 #include "../components/taskcardwidget.h"
+#include "../components/toastwidget.h"
 #include "../dialogs/taskeditdialog.h"
+#include "../ui/theme.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -124,19 +126,20 @@ QList<TaskViewItem> toViewItems(const QList<Task> &tasks)
 TodoPage::TodoPage(QWidget *parent)
     : QWidget(parent)
 {
-    setStyleSheet("background:#F7F3EF; font-family: 'Microsoft YaHei','Segoe UI', Arial; color: #222; font-weight:500;");
+    setStyleSheet(QString("background:%1; font-family: 'Microsoft YaHei','Segoe UI', Arial; color: %2; font-weight:500;")
+    .arg(Theme::BACKGROUND).arg(Theme::TEXT_PRIMARY));
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(16, 16, 16, 16);
     mainLayout->setSpacing(14);
 
     QFrame *hero = new QFrame;
-    hero->setStyleSheet(R"(
+    hero->setStyleSheet(QString(R"(
         QFrame {
-            background: qlineargradient(x1:0, y1:0, x2:1, stop:0 #8B1E2D, stop:1 #B44B5D);
-            border-radius: 20px;
+            background: qlineargradient(x1:0, y1:0, x2:1, stop:0 %1, stop:1 %2);
+            border-radius: %3px;
         }
-    )");
+    )").arg(Theme::PRIMARY).arg("#B44B5D").arg(Theme::CARD_RADIUS));
     QVBoxLayout *heroLayout = new QVBoxLayout(hero);
     heroLayout->setContentsMargins(20, 18, 20, 18);
 
@@ -149,14 +152,15 @@ TodoPage::TodoPage(QWidget *parent)
     mainLayout->addWidget(hero);
 
     QFrame *filterCard = new QFrame;
-    filterCard->setStyleSheet("background:white; border-radius:16px; border:1px solid #ECECEC;");
+    filterCard->setStyleSheet(QString("background:%1; border-radius:%2px; border:1px solid %3;")
+        .arg(Theme::CARD_BG).arg(Theme::CARD_RADIUS).arg(Theme::BORDER));
     QVBoxLayout *filterLayout = new QVBoxLayout(filterCard);
     filterLayout->setContentsMargins(12, 12, 12, 12);
     filterLayout->setSpacing(10);
     filterLayout->addWidget(createFilterBar());
 
     summaryLabel = new QLabel;
-    summaryLabel->setStyleSheet("color:#7A6C6C; font-size:12px; font-weight:600;");
+    summaryLabel->setStyleSheet(QString("color:%1; font-size:12px; font-weight:600;").arg(Theme::TEXT_SECONDARY));
     filterLayout->addWidget(summaryLabel);
     mainLayout->addWidget(filterCard);
 
@@ -205,9 +209,9 @@ QWidget* TodoPage::createFilterBar()
     statusFilter->addItems({"全部状态", "未完成", "已完成"});
 
     QPushButton *refreshButton = new QPushButton("🔄 刷新");
-    refreshButton->setStyleSheet(R"(
+    refreshButton->setStyleSheet(QString(R"(
         QPushButton {
-            background: linear-gradient(135deg, #8B1E2D, #B44B5D);
+            background: linear-gradient(135deg, %1, #B44B5D);
             color: white;
             border: none;
             border-radius: 12px;
@@ -216,16 +220,16 @@ QWidget* TodoPage::createFilterBar()
             font-size: 13px;
         }
         QPushButton:hover {
-            background: linear-gradient(135deg, #7A1C2C, #A63D4F);
+            background: linear-gradient(135deg, %2, #A63D4F);
             box-shadow: 0 4px 12px rgba(139, 30, 45, 0.3);
         }
         QPushButton:pressed {
-            background: linear-gradient(135deg, #6A1620, #963547);
+            background: linear-gradient(135deg, %3, #963547);
         }
-    )");
+    )").arg(Theme::PRIMARY).arg(Theme::PRIMARY_DARK).arg("#6A1620"));
 
     for (QComboBox *box : {courseFilter, timeFilter, statusFilter}) {
-        box->setStyleSheet(R"(
+        box->setStyleSheet(QString(R"(
             QComboBox {
                 border: 2px solid #E8D9DB;
                 border-radius: 12px;
@@ -234,14 +238,14 @@ QWidget* TodoPage::createFilterBar()
                 color: #222;
                 font-size: 13px;
                 font-weight: 600;
-                selection-background-color: #8B1E2D;
+                selection-background-color: %1;
             }
             QComboBox:hover {
-                border: 2px solid #8B1E2D;
+                border: 2px solid %1;
                 background: #FAFAFA;
             }
             QComboBox:focus {
-                border: 2px solid #8B1E2D;
+                border: 2px solid %1;
                 background: white;
                 outline: none;
             }
@@ -260,7 +264,7 @@ QWidget* TodoPage::createFilterBar()
                 border: 1px solid #E8D9DB;
                 background-color: white;
                 color: #222;
-                selection-background-color: #8B1E2D;
+                selection-background-color: %1;
                 selection-color: white;
                 border-radius: 8px;
                 outline: none;
@@ -270,16 +274,16 @@ QWidget* TodoPage::createFilterBar()
                 height: 30px;
             }
             QComboBox QAbstractItemView::item:hover {
-                background-color: #FDECEC;
+                background-color: %2;
             }
             QComboBox QAbstractItemView::item:selected {
-                background-color: #8B1E2D;
+                background-color: %1;
                 color: white;
             }
-        )");
+        )").arg(Theme::PRIMARY).arg(Theme::PRIMARY_LIGHT));
     }
 
-    searchEdit->setStyleSheet(R"(
+    searchEdit->setStyleSheet(QString(R"(
         QLineEdit {
             border: 2px solid #E8D9DB;
             border-radius: 12px;
@@ -288,18 +292,18 @@ QWidget* TodoPage::createFilterBar()
             color: #222;
             font-size: 13px;
             font-weight: 600;
-            selection-background-color: #8B1E2D;
+            selection-background-color: %1;
         }
         QLineEdit:hover {
-            border: 2px solid #8B1E2D;
+            border: 2px solid %1;
             background: #FAFAFA;
         }
         QLineEdit:focus {
-            border: 2px solid #8B1E2D;
+            border: 2px solid %1;
             background: white;
             outline: none;
         }
-    )");
+    )").arg(Theme::PRIMARY));
 
     layout->addWidget(searchEdit, 2);
     layout->addWidget(courseFilter, 1);
@@ -458,7 +462,7 @@ void TodoPage::applyFilter()
         boardLayout->addWidget(sectionBody);
     };
 
-    appendSection("今日截止", "#8B1E2D", overdue + today);
+    appendSection("今日截止", Theme::PRIMARY, overdue + today);
     appendSection("本周 DDL", "#7B5E53", week);
     appendSection("后续任务", "#607D8B", later);
 
@@ -487,16 +491,16 @@ void TodoPage::applyFilter()
         QToolButton *toggle = new QToolButton;
         toggle->setCheckable(true);
         toggle->setText("展开");
-        toggle->setStyleSheet(R"(
+        toggle->setStyleSheet(QString(R"(
             QToolButton {
                 background: #FAF7F7;
-                color: #8B1E2D;
+                color: %1;
                 border: 1px solid #E8D9DB;
                 border-radius: 10px;
                 padding: 6px 10px;
                 font-weight: 600;
             }
-        )");
+        )").arg(Theme::PRIMARY));
         connect(toggle, &QToolButton::toggled, this, [completedBody, toggle](bool checked) {
             completedBody->setVisible(checked);
             toggle->setText(checked ? "收起" : "展开");

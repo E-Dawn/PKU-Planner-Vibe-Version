@@ -1,4 +1,5 @@
 #include "courseactiondialog.h"
+#include "../ui/theme.h"
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPushButton>
@@ -9,7 +10,7 @@ CourseActionDialog::CourseActionDialog(QWidget *parent)
     setFixedSize(320,220);
     setWindowTitle("课程操作");
 
-    setStyleSheet(R"(
+    setStyleSheet(QString(R"(
         QDialog{
             background:#FAFAFA;
             border-radius:16px;
@@ -22,7 +23,7 @@ CourseActionDialog::CourseActionDialog(QWidget *parent)
         }
 
         QPushButton{
-            background:#8B1E2D;
+            background:%1;
             color:white;
             border:none;
             border-radius:10px;
@@ -31,9 +32,9 @@ CourseActionDialog::CourseActionDialog(QWidget *parent)
         }
 
         QPushButton:hover{
-            background:#A8323E;
+            background:%2;
         }
-    )");
+    )").arg(Theme::PRIMARY).arg(Theme::PRIMARY_DARK));
 
     QVBoxLayout *layout=new QVBoxLayout(this);
 

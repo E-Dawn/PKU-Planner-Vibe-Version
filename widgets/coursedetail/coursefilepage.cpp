@@ -1,4 +1,5 @@
 #include "coursefilepage.h"
+#include "../../ui/theme.h"
 
 #include <QDateTime>
 #include <QDesktopServices>
@@ -70,8 +71,8 @@ CourseFilePage::CourseFilePage(QWidget* parent)
     for (QPushButton* button : {bindFolderBtn, openFolderBtn}) {
         button->setCursor(Qt::PointingHandCursor);
         button->setStyleSheet(
-            "QPushButton{background:#FBECEE;color:#8B1E2D;border:1px solid #F0D6DA;border-radius:12px;padding:8px 14px;font-weight:700;}"
-            "QPushButton:hover{border:1px solid #8B1E2D;}"
+            QString("QPushButton{background:%1;color:%2;border:1px solid %3;border-radius:12px;padding:8px 14px;font-weight:700;}"
+            "QPushButton:hover{border:1px solid %2;}").arg(Theme::PRIMARY_LIGHT).arg(Theme::PRIMARY).arg(Theme::PRIMARY_LIGHT)
         );
     }
     bindBtnLayout->addWidget(bindFolderBtn);
@@ -98,8 +99,8 @@ CourseFilePage::CourseFilePage(QWidget* parent)
     for (QPushButton* button : {newNoteBtn, recordBtn}) {
         button->setCursor(Qt::PointingHandCursor);
         button->setStyleSheet(
-            "QPushButton{background:#FBECEE;color:#8B1E2D;border:1px solid #F0D6DA;border-radius:12px;padding:8px 14px;font-weight:700;}"
-            "QPushButton:hover{border:1px solid #8B1E2D;}"
+            QString("QPushButton{background:%1;color:%2;border:1px solid %3;border-radius:12px;padding:8px 14px;font-weight:700;}"
+            "QPushButton:hover{border:1px solid %2;}").arg(Theme::PRIMARY_LIGHT).arg(Theme::PRIMARY).arg(Theme::PRIMARY_LIGHT)
         );
     }
     actionLayout->addWidget(newNoteBtn);
@@ -118,7 +119,7 @@ CourseFilePage::CourseFilePage(QWidget* parent)
     QLabel* recentTitle = new QLabel("最近文件", recentCard);
     recentTitle->setStyleSheet("font-size:14px;font-weight:700;color:#222;");
     fileList = new QListWidget(recentCard);
-    fileList->setStyleSheet(R"(
+    fileList->setStyleSheet(QString(R"(
         QListWidget {
             border: none;
             background: transparent;
@@ -126,18 +127,18 @@ CourseFilePage::CourseFilePage(QWidget* parent)
         QListWidget::item {
             padding: 10px 12px;
             border-radius: 12px;
-            background: #FFE4E4;
+            background: %1;
             margin-bottom: 8px;
-            color: #8B1E2D;
+            color: %2;
         }
         QListWidget::item:selected {
-            background: #8B1E2D;
+            background: %2;
             color: white;
         }
         QListWidget::item:hover {
-            background: #FFD7DA;
+            background: %3;
         }
-    )");
+    )").arg(Theme::PRIMARY_LIGHTER).arg(Theme::PRIMARY).arg(Theme::PRIMARY_LIGHT));
     fileList->setMinimumHeight(180);
 
     recentLayout->addWidget(recentTitle);

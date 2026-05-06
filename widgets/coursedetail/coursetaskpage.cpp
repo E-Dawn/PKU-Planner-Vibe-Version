@@ -1,4 +1,5 @@
 #include "coursetaskpage.h"
+#include "../../ui/theme.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -82,8 +83,8 @@ CourseTaskPage::CourseTaskPage(QWidget* parent)
     QPushButton* addBtn = new QPushButton("+ 添加任务", filterCard);
     addBtn->setCursor(Qt::PointingHandCursor);
     addBtn->setStyleSheet(
-        "QPushButton{background:#8B1E2D;color:white;border:none;border-radius:12px;padding:8px 14px;font-weight:700;}"
-        "QPushButton:hover{background:#7A1C2C;}"
+        QString("QPushButton{background:%1;color:white;border:none;border-radius:12px;padding:8px 14px;font-weight:700;}"
+        "QPushButton:hover{background:%2;}").arg(Theme::PRIMARY).arg(Theme::PRIMARY_DARK)
     );
 
     for (QWidget* widget : {static_cast<QWidget*>(searchEdit), static_cast<QWidget*>(sortBox)}) {

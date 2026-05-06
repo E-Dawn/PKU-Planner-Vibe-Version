@@ -1,5 +1,6 @@
 #include "courseeditdialog.h"
 #include "../models/datamanager.h"
+#include "../ui/theme.h"
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QFrame>
@@ -22,7 +23,7 @@ CourseEditDialog::CourseEditDialog(int defaultStart, int defaultEnd, QWidget *pa
     root->setContentsMargins(20,20,20,20);
     root->addWidget(container);
     
-    setStyleSheet(R"(
+    setStyleSheet(QString(R"(
         QLineEdit {
             border: 1px solid #E8DADA;
             border-radius: 10px;
@@ -32,7 +33,7 @@ CourseEditDialog::CourseEditDialog(int defaultStart, int defaultEnd, QWidget *pa
             font-size: 13px;
         }
         QLineEdit:focus {
-            border: 2px solid #8B1E2D;
+            border: 2px solid %1;
             background: white;
         }
         QLineEdit:disabled {
@@ -48,10 +49,10 @@ CourseEditDialog::CourseEditDialog(int defaultStart, int defaultEnd, QWidget *pa
             font-size: 13px;
         }
         QComboBox:focus {
-            border: 2px solid #8B1E2D;
+            border: 2px solid %1;
         }
         QPushButton {
-            background: #8B1E2D;
+            background: %1;
             color: white;
             border-radius: 10px;
             padding: 10px 20px;
@@ -60,10 +61,10 @@ CourseEditDialog::CourseEditDialog(int defaultStart, int defaultEnd, QWidget *pa
             border: none;
         }
         QPushButton:hover {
-            background: #7A1A25;
+            background: %2;
         }
         QPushButton:pressed {
-            background: #6A1520;
+            background: %3;
         }
         QDialogButtonBox QPushButton[role='RejectRole'] {
             background: #F5F5F5;
@@ -78,7 +79,7 @@ CourseEditDialog::CourseEditDialog(int defaultStart, int defaultEnd, QWidget *pa
             font-size: 13px;
             font-weight: 500;
         }
-    )");
+    )").arg(Theme::PRIMARY).arg(Theme::PRIMARY_DARK).arg("#6A1520"));
 
     QVBoxLayout *mainLayout = new QVBoxLayout(container);
     QFormLayout *formLayout = new QFormLayout();

@@ -1,4 +1,5 @@
 #include "taskcardwidget.h"
+#include "../ui/theme.h"
 
 #include <QCheckBox>
 #include <QHBoxLayout>
@@ -9,25 +10,26 @@
 namespace {
 QString courseTagStyle()
 {
-    return "background:#FCECEC; color:#8B1E2D; border-radius:10px; padding:4px 10px; font-size:12px; font-weight:600;";
+    return QString("background:%1; color:%2; border-radius:10px; padding:4px 10px; font-size:12px; font-weight:600;")
+        .arg(Theme::PRIMARY_LIGHT).arg(Theme::PRIMARY);
 }
 
 QString actionButtonStyle()
 {
-    return R"(
+    return QString(R"(
         QPushButton {
             background: #FAF7F7;
-            color: #8B1E2D;
+            color: %1;
             border: 1px solid #E8D9DB;
             border-radius: 10px;
             padding: 6px 12px;
             font-weight: 600;
         }
         QPushButton:hover {
-            background: #8B1E2D;
+            background: %1;
             color: white;
         }
-    )";
+    )").arg(Theme::PRIMARY);
 }
 }
 
@@ -36,16 +38,16 @@ TaskCardWidget::TaskCardWidget(const Task &task, QWidget *parent)
 {
     setObjectName("taskCard");
     setCursor(Qt::PointingHandCursor);
-    setStyleSheet(R"(
+    setStyleSheet(QString(R"(
         QFrame#taskCard {
             background: white;
-            border-radius: 16px;
-            border: 1px solid #F0E6E6;
+            border-radius: %1px;
+            border: 1px solid %2;
         }
         QFrame#taskCard:hover {
-            border: 1px solid #8B1E2D;
+            border: 1px solid %3;
         }
-    )");
+    )").arg(Theme::CARD_RADIUS).arg(Theme::BORDER).arg(Theme::PRIMARY));
 
     QVBoxLayout *root = new QVBoxLayout(this);
     root->setContentsMargins(14, 12, 14, 12);
@@ -54,19 +56,19 @@ TaskCardWidget::TaskCardWidget(const Task &task, QWidget *parent)
     doneBox = new QCheckBox;
     doneBox->setChecked(m_task.completed);
     doneBox->setCursor(Qt::PointingHandCursor);
-    doneBox->setStyleSheet(R"(
+    doneBox->setStyleSheet(QString(R"(
         QCheckBox::indicator {
             width: 18px;
             height: 18px;
             border-radius: 9px;
-            border: 1px solid #8B1E2D;
+            border: 1px solid %1;
             background: white;
         }
         QCheckBox::indicator:checked {
-            background: #8B1E2D;
-            border: 1px solid #8B1E2D;
+            background: %1;
+            border: 1px solid %1;
         }
-    )");
+    )").arg(Theme::PRIMARY));
 
     courseTag = new QLabel;
     courseTag->setStyleSheet(courseTagStyle());
@@ -198,8 +200,8 @@ QString TaskCardWidget::countdownText() const
 QString TaskCardWidget::priorityColor() const
 {
     switch (m_task.priority) {
-    case 2: return "#D32F2F";
-    case 1: return "#F9A825";
+    case 2: return Theme::DANGER;
+    case 1: return Theme::WARNING;
     default: return "#1E88E5";
     }
 }
@@ -221,8 +223,8 @@ void TaskCardWidget::updateVisualState()
         titleLabel->setStyleSheet("font-size:15px; font-weight:700; color:#222;");
         courseTag->setStyleSheet(courseTagStyle());
         if (m_task.isOverdue()) {
-            statusBadge->setStyleSheet("color:#C62828; font-size:12px; font-weight:700;");
-            deadlineLabel->setStyleSheet("color:#C62828; font-size:12px; font-weight:700;");
+            statusBadge->setStyleSheet(QString("color:%1; font-size:12px; font-weight:700;").arg(Theme::DANGER));
+            deadlineLabel->setStyleSheet(QString("color:%1; font-size:12px; font-weight:700;").arg(Theme::DANGER));
         } else if (m_task.daysLeft() == 0) {
             statusBadge->setStyleSheet("color:#E64A19; font-size:12px; font-weight:700;");
             deadlineLabel->setStyleSheet("color:#E64A19; font-size:12px; font-weight:700;");

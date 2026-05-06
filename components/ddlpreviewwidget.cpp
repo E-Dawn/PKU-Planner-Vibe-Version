@@ -1,5 +1,6 @@
 #include "ddlpreviewwidget.h"
 #include "../models/datamanager.h"
+#include "../ui/theme.h"
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QDateTime>
@@ -18,16 +19,16 @@ DDLPreviewWidget::DDLPreviewWidget(const QString &courseName, QWidget *parent)
     setAttribute(Qt::WA_ShowWithoutActivating);
     setWindowFlag(Qt::FramelessWindowHint);
     setMouseTracking(true);
-    setStyleSheet(R"(
-        QFrame#ddlPreview { 
+    setStyleSheet(QString(R"(
+        QFrame#ddlPreview {
             background: rgba(255,255,255,0.98);
             border: 1px solid #E8E8E8;
             border-radius: 10px;
         }
-        QLabel.title { font-weight:700; color:#222; }
-        QLabel.meta { color:#666; font-size:12px; }
-        QPushButton.link { background: transparent; color:#8B1E2D; border:none; }
-    )");
+        QLabel.title { font-weight:700; color:%1; }
+        QLabel.meta { color:%2; font-size:12px; }
+        QPushButton.link { background: transparent; color:%3; border:none; }
+    )").arg(Theme::TEXT_PRIMARY).arg(Theme::TEXT_SECONDARY).arg(Theme::PRIMARY));
 
     buildUI(courseName);
 

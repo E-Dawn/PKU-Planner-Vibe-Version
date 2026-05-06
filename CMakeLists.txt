@@ -34,6 +34,8 @@ set(PROJECT_SOURCES
     ui/sidebarwidget.h
     ui/topbarwidget.cpp
     ui/topbarwidget.h
+    ui/theme.cpp
+    ui/theme.h
     pages/dashboardpage.cpp
     pages/dashboardpage.h
     pages/todopage.cpp
@@ -44,6 +46,15 @@ set(PROJECT_SOURCES
     components/ddlpreviewwidget.h
     components/taskcardwidget.cpp
     components/taskcardwidget.h
+    components/basecardwidget.cpp
+    components/basecardwidget.h
+    components/toastwidget.cpp
+    components/toastwidget.h
+    services/reminderservice.cpp
+    services/reminderservice.h
+    components/emptystatewidget.cpp
+    components/emptystatewidget.h
+    utils/pageanimator.h
     dialogs/courseeditdialog.cpp
     dialogs/courseeditdialog.h
     dialogs/courseactiondialog.cpp
@@ -72,6 +83,8 @@ set(PROJECT_SOURCES
     widgets/coursedetail/coursestatswidget.h
     pages/statspage.cpp
     pages/statspage.h
+    pages/settingspage.cpp
+    pages/settingspage.h
 )
 
 qt_add_executable(PKUPlanner

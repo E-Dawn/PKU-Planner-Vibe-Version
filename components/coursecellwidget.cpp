@@ -1,4 +1,5 @@
 #include "coursecellwidget.h"
+#include "../ui/theme.h"
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QToolTip>
@@ -22,17 +23,17 @@ CourseCellWidget::CourseCellWidget(int row, int col, QWidget *parent)
     setMinimumSize(50, 48);               // 覆盖原本的10px最小高度
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    setStyleSheet(R"(
+    setStyleSheet(QString(R"(
         QFrame {
             background:#FAFAFA;
             border-radius:10px;
             border:1px solid transparent;
         }
         QFrame:hover {
-            background:#FDECEC;
-            border:1px solid #8B1E2D;
+            background:%1;
+            border:1px solid %2;
         }
-    )");
+    )").arg(Theme::PRIMARY_LIGHT).arg(Theme::PRIMARY));
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(4,2,4,2);
@@ -189,20 +190,20 @@ void CourseCellWidget::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu menu;
     menu.setWindowFlag(Qt::NoDropShadowWindowHint);
-    menu.setStyleSheet(R"(
+    menu.setStyleSheet(QString(R"(
         QMenu {
             background-color: white;
             border: 1px solid #E0E0E0;
             border-radius: 8px;
         }
         QMenu::item:selected {
-            background-color: #8B1E2D;
+            background-color: %1;
             color: white;
         }
         QMenu::item:pressed {
-            background-color: #7A1C2C;
+            background-color: %2;
         }
-    )");
+    )").arg(Theme::PRIMARY).arg(Theme::PRIMARY_DARK));
 
     if (title->text().isEmpty()) {
         // Empty cell: show only "Create Course" option

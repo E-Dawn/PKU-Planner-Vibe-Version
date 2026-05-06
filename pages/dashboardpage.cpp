@@ -1,5 +1,6 @@
 #include "dashboardpage.h"
 #include "../components/coursecellwidget.h"
+#include "../ui/theme.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -154,7 +155,7 @@ QWidget* DashboardPage::createTopBar()
     semesterProgress->setValue(currentWeek);
     semesterProgress->setTextVisible(false);
 
-    semesterProgress->setStyleSheet(R"(
+    semesterProgress->setStyleSheet(QString(R"(
         QProgressBar {
             border:none;
             background:#F5F5F5;
@@ -163,10 +164,10 @@ QWidget* DashboardPage::createTopBar()
         }
 
         QProgressBar::chunk {
-            background:#8B1E2D;
+            background:%1;
             border-radius:8px;
         }
-    )");
+    )").arg(Theme::PRIMARY));
 
     weekLabel = new QLabel;
     weekLabel->setStyleSheet("font-weight:700; font-size:14px; color:#222;");
@@ -244,7 +245,7 @@ QWidget* DashboardPage::createBottomStats()
 
         QLabel *num = new QLabel("0");
         num->setStyleSheet(
-            "font-size:18px;font-weight:700;color:#8B1E2D;"
+            QString("font-size:18px;font-weight:700;color:%1;").arg(Theme::PRIMARY)
         );
 
         QLabel *title = new QLabel(t);
@@ -268,7 +269,7 @@ QWidget* DashboardPage::createBottomStats()
         else if(t == "当前时间")
         {
             timeLabel = num;
-            timeLabel->setStyleSheet("font-size:14px;font-weight:bold;color:#8B1E2D;");
+            timeLabel->setStyleSheet(QString("font-size:14px;font-weight:bold;color:%1;").arg(Theme::PRIMARY));
 
             QTimer *timer = new QTimer(this);
             connect(timer,&QTimer::timeout,this,[=](){
@@ -377,6 +378,7 @@ QWidget* DashboardPage::createRightPanel()
 
     layout->addWidget(todayCard);
     layout->addWidget(ddlCard);
+    layout->addWidget(createSuggestionCard());
     layout->addStretch();
 
     return widget;
@@ -443,19 +445,19 @@ void DashboardPage::updateDDLWidget()
 
         QCheckBox *doneBox = new QCheckBox;
         doneBox->setChecked(task.completed);
-        doneBox->setStyleSheet(R"(
+        doneBox->setStyleSheet(QString(R"(
             QCheckBox::indicator {
                 width: 18px;
                 height: 18px;
                 border-radius: 9px;
-                border: 1px solid #8B1E2D;
+                border: 1px solid %1;
                 background: white;
             }
             QCheckBox::indicator:checked {
-                background: #8B1E2D;
-                border: 1px solid #8B1E2D;
+                background: %1;
+                border: 1px solid %1;
             }
-        )");
+        )").arg(Theme::PRIMARY));
 
         QLabel *nameLbl = new QLabel(task.course + " - " + task.title);
         nameLbl->setStyleSheet("font-weight:600; font-size:13px; color:#222;");
@@ -471,13 +473,13 @@ void DashboardPage::updateDDLWidget()
         QLabel *timeLbl = new QLabel;
         if (daysLeft < 0) {
             timeLbl->setText("已逾期");
-            timeLbl->setStyleSheet("color:#D32F2F; font-size:12px; font-weight:600;");
+            timeLbl->setStyleSheet(QString("color:%1; font-size:12px; font-weight:600;").arg(Theme::DANGER));
         } else if (daysLeft == 0) {
             timeLbl->setText("今晚截止");
             timeLbl->setStyleSheet("color:#E64A19; font-size:12px; font-weight:600;");
         } else {
             timeLbl->setText(QString("剩余 %1 天").arg(daysLeft));
-            timeLbl->setStyleSheet("color:#8B1E2D; font-size:12px;");
+            timeLbl->setStyleSheet(QString("color:%1; font-size:12px;").arg(Theme::PRIMARY));
         }
 
         QLabel *courseLbl = new QLabel(task.course);
@@ -488,20 +490,20 @@ void DashboardPage::updateDDLWidget()
         for (QPushButton *btn : {editBtn, deleteBtn}) {
             btn->setCursor(Qt::PointingHandCursor);
             btn->setMinimumHeight(30);
-            btn->setStyleSheet(R"(
+            btn->setStyleSheet(QString(R"(
                 QPushButton {
                     background: transparent;
-                    color: #8B1E2D;
+                    color: %1;
                     border: 1px solid #E2C9CD;
                     border-radius: 8px;
                     padding: 6px 12px;
                     font-weight:600;
                 }
                 QPushButton:hover {
-                    background: #8B1E2D;
+                    background: %1;
                     color: white;
                 }
-            )");
+            )").arg(Theme::PRIMARY));
         }
 
         metaRow->addWidget(courseLbl);
@@ -961,4 +963,74 @@ void DashboardPage::refreshCourseUrgency()
 {
     renderCourses();
     updateBottomStats();
+}
+
+QWidget* DashboardPage::createSuggestionCard()
+{
+    QFrame *card = new QFrame;
+    card->setStyleSheet(QString("background:white; border-radius:%1px; border:1px solid %2;").arg(Theme::CARD_RADIUS).arg(Theme::BORDER));
+    QVBoxLayout *layout = new QVBoxLayout(card);
+    layout->setContentsMargins(16, 14, 16, 14);
+    layout->setSpacing(8);
+
+    QLabel *title = new QLabel("今日建议");
+    title->setStyleSheet(QString("font-weight:700; font-size:14px; color:%1;").arg(Theme::TEXT_PRIMARY));
+    layout->addWidget(title);
+
+    const auto tasks = DataManager::instance().tasks();
+    const auto courses = DataManager::instance().courses();
+    QDateTime now = QDateTime::currentDateTime();
+
+    int overdueCount = 0;
+    for (const Task& t : tasks) {
+        if (t.isOverdue()) overdueCount++;
+    }
+    if (overdueCount > 0) {
+        QLabel *tip = new QLabel(QString("⚠ %1个逾期任务需处理").arg(overdueCount));
+        tip->setStyleSheet(QString("color:%1;font-size:12px;padding:8px;background:%2;border-radius:8px;").arg(Theme::DANGER).arg(Theme::PRIMARY_LIGHT));
+        layout->addWidget(tip);
+    }
+
+    QMap<QString, int> courseTaskCount;
+    for (const Task& t : tasks) {
+        if (!t.completed) courseTaskCount[t.course]++;
+    }
+    for (auto it = courseTaskCount.constBegin(); it != courseTaskCount.constEnd(); ++it) {
+        if (it.value() >= 3) {
+            QLabel *tip = new QLabel(QString("📚 %1 有%2个待办").arg(it.key()).arg(it.value()));
+            tip->setStyleSheet(QString("color:%1;font-size:12px;padding:8px;background:%2;border-radius:8px;").arg(Theme::WARNING).arg("#FFF8E1"));
+            layout->addWidget(tip);
+            break;
+        }
+    }
+
+    int urgentCount = 0;
+    for (const Task& t : tasks) {
+        if (!t.completed && t.daysLeft() >= 0 && t.daysLeft() <= 2) urgentCount++;
+    }
+    if (urgentCount > 0) {
+        QLabel *tip = new QLabel(QString("⏰ %1个任务即将到期").arg(urgentCount));
+        tip->setStyleSheet(QString("color:%1;font-size:12px;padding:8px;background:#FFF3E0;border-radius:8px;").arg(Theme::WARNING));
+        layout->addWidget(tip);
+    }
+
+    int total = tasks.size();
+    int completed = 0;
+    for (const Task& t : tasks) {
+        if (t.completed) completed++;
+    }
+    double rate = total > 0 ? completed * 100.0 / total : 0;
+    if (total > 5 && rate >= 80) {
+        QLabel *tip = new QLabel(QString("🎉 完成率%1%，继续保持！").arg(qRound(rate)));
+        tip->setStyleSheet(QString("color:%1;font-size:12px;padding:8px;background:#E8F5E9;border-radius:8px;").arg(Theme::SUCCESS));
+        layout->addWidget(tip);
+    }
+
+    if (layout->count() == 1) {
+        QLabel *empty = new QLabel("暂无建议");
+        empty->setStyleSheet(QString("color:%1;font-size:12px;").arg(Theme::TEXT_TERTIARY));
+        layout->addWidget(empty);
+    }
+
+    return card;
 }

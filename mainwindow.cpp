@@ -4,6 +4,8 @@
 #include <QVBoxLayout>
 #include <QStackedWidget>
 #include <QWidget>
+#include <QTimer>
+#include <QMessageBox>
 
 #include "ui/sidebarwidget.h"
 #include "ui/topbarwidget.h"
@@ -12,6 +14,7 @@
 #include "pages/todopage.h"
 #include "widgets/coursedetail/coursedetaildrawer.h"
 #include "pages/statspage.h"
+#include "pages/settingspage.h"
 #include "dialogs/taskeditdialog.h"
 #include "dialogs/courseeditdialog.h"
 #include "models/datamanager.h"
@@ -43,6 +46,8 @@ MainWindow::MainWindow(QWidget *parent)
     // Add placeholder widgets
     stack->addWidget(new QWidget()); // index 0 - will be replaced by DashboardPage
     stack->addWidget(new QWidget()); // index 1 - will be replaced by TodoPage
+    stack->addWidget(new QWidget()); // index 2 - will be replaced by StatsPage
+    stack->addWidget(new QWidget()); // index 3 - will be replaced by SettingsPage
 
     rightLayout->addWidget(topbar);
     rightLayout->addWidget(stack);
@@ -69,10 +74,16 @@ void MainWindow::initPages()
     // Remove placeholder widgets and add real pages
     QWidget *oldPage0 = stack->widget(0);
     QWidget *oldPage1 = stack->widget(1);
+    QWidget *oldPage2 = stack->widget(2);
+    QWidget *oldPage3 = stack->widget(3);
     stack->removeWidget(oldPage0);
     stack->removeWidget(oldPage1);
+    stack->removeWidget(oldPage2);
+    stack->removeWidget(oldPage3);
     delete oldPage0;
     delete oldPage1;
+    delete oldPage2;
+    delete oldPage3;
     dashboardPage = new DashboardPage;
     todoPage = new TodoPage;
     stack->insertWidget(0, dashboardPage);
@@ -80,6 +91,21 @@ void MainWindow::initPages()
     // Stats page
     StatsPage *statsPage = new StatsPage;
     stack->insertWidget(2, statsPage);
+    // Settings page
+    SettingsPage *settingsPage = new SettingsPage;
+    stack->insertWidget(3, settingsPage);
+
+    // Check first launch - show welcome if no courses
+    const auto &courses = DataManager::instance().courses();
+    if (courses.isEmpty()) {
+        QTimer::singleShot(500, this, [](){
+            QMessageBox welcome(nullptr);
+            welcome.setWindowTitle("欢迎使用 Course Helper");
+            welcome.setText("欢迎使用课程管理助手！\n\n点击课程表空白处添加您的第一门课程，开始管理您的学习吧。");
+            welcome.setIcon(QMessageBox::Information);
+            welcome.exec();
+        });
+    }
     
     // Connect navigation signal from DashboardPage
     connect(dashboardPage, &DashboardPage::navigateToTodoPageRequested,
@@ -97,8 +123,12 @@ void MainWindow::initPages()
             // default handlers already connected above; handle stats index separately
             if (index == 2) {
                 stack->setCurrentIndex(2);
+                statsPage->refreshData();
             }
         });
+
+        // Auto refresh stats when tasks change
+        connect(&DataManager::instance(), &DataManager::tasksChanged, statsPage, &StatsPage::refreshData);
     // Drawer actions: add task / edit course
     connect(courseDrawer, &CourseDetailDrawer::addTaskRequested, this, &MainWindow::handleAddTaskRequested);
     connect(courseDrawer, &CourseDetailDrawer::editCourseRequested, this, &MainWindow::handleEditCourseRequested);
