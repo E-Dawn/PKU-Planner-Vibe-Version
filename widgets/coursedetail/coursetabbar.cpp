@@ -14,7 +14,7 @@ CourseTabBar::CourseTabBar(QWidget* parent)
     fileBtn = new QPushButton("课程资料");
     statsBtn = new QPushButton("统计分析");
 
-    for (QPushButton* b : {infoBtn, taskBtn, fileBtn}) {
+    for (QPushButton* b : {infoBtn, taskBtn, fileBtn, statsBtn}) {
         b->setCursor(Qt::PointingHandCursor);
         b->setCheckable(true);
         b->setStyleSheet("QPushButton{background:white;border:1px solid #E8E8E8;border-radius:8px;padding:6px 10px;} QPushButton:checked{background:#8B1E2D;color:white;}");

@@ -126,11 +126,16 @@ CourseFilePage::CourseFilePage(QWidget* parent)
         QListWidget::item {
             padding: 10px 12px;
             border-radius: 12px;
-            background: #FCFBFA;
+            background: #FFE4E4;
             margin-bottom: 8px;
+            color: #8B1E2D;
+        }
+        QListWidget::item:selected {
+            background: #8B1E2D;
+            color: white;
         }
         QListWidget::item:hover {
-            background: #FBECEE;
+            background: #FFD7DA;
         }
     )");
     fileList->setMinimumHeight(180);

@@ -48,6 +48,16 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
                 border: none;
                 font-weight: 600;
             }
+            QCalendarWidget QToolButton#qt_calendar_prevmonth {
+                color: transparent;
+                background: transparent;
+                border: none;
+            }
+            QCalendarWidget QToolButton#qt_calendar_nextmonth {
+                color: transparent;
+                background: transparent;
+                border: none;
+            }
             QCalendarWidget QMenu {
                 background: white;
                 color: #222;
@@ -105,41 +115,93 @@ TaskEditDialog::TaskEditDialog(QWidget *parent, const QString &defaultCourse)
             background: transparent;
         }
         QLineEdit {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 8px;
-            color: #222;
+            border: 1px solid #E8DADA;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #FEFEFE;
+            color: #333;
+            font-size: 13px;
+        }
+        QLineEdit:focus {
+            border: 2px solid #8B1E2D;
+            background: white;
         }
         QDateTimeEdit {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 8px;
-            color: #222;
+            border: 1px solid #E8DADA;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #FEFEFE;
+            color: #333;
+            font-size: 13px;
+        }
+        QDateTimeEdit:focus {
+            border: 2px solid #8B1E2D;
         }
         QComboBox {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 8px;
-            color: #222;
+            border: 1px solid #E8DADA;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #FEFEFE;
+            color: #333;
+            font-size: 13px;
+        }
+        QComboBox:focus {
+            border: 2px solid #8B1E2D;
         }
         QSpinBox {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 8px;
-            color: #222;
+            border: 1px solid #E8DADA;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #FEFEFE;
+            color: #333;
+            font-size: 13px;
+        }
+        QSpinBox:focus {
+            border: 2px solid #8B1E2D;
         }
         QCheckBox {
-            color: #222;
+            color: #444;
             padding: 4px 0;
+            font-size: 13px;
+        }
+        QCheckBox::indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #E8DADA;
+            background: white;
+        }
+        QCheckBox::indicator:checked {
+            background: #8B1E2D;
+            border: 2px solid #8B1E2D;
         }
         QPushButton {
             background: #8B1E2D;
             color: white;
-            border-radius: 8px;
-            padding: 8px 16px;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 13px;
+            border: none;
         }
         QPushButton:hover {
-            background: #7A1C2C;
+            background: #7A1A25;
+        }
+        QPushButton:pressed {
+            background: #6A1520;
+        }
+        QDialogButtonBox QPushButton[role='RejectRole'] {
+            background: #F5F5F5;
+            color: #666;
+        }
+        QDialogButtonBox QPushButton[role='RejectRole']:hover {
+            background: #E8E8E8;
+            color: #333;
+        }
+        QLabel {
+            color: #444;
+            font-size: 13px;
+            font-weight: 500;
         }
     )");
 }

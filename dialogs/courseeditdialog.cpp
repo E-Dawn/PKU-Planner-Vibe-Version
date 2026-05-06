@@ -24,18 +24,59 @@ CourseEditDialog::CourseEditDialog(int defaultStart, int defaultEnd, QWidget *pa
     
     setStyleSheet(R"(
         QLineEdit {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 8px;
+            border: 1px solid #E8DADA;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #FEFEFE;
+            color: #333;
+            font-size: 13px;
+        }
+        QLineEdit:focus {
+            border: 2px solid #8B1E2D;
+            background: white;
+        }
+        QLineEdit:disabled {
+            background: #F5F5F5;
+            color: #999;
+        }
+        QComboBox {
+            border: 1px solid #E8DADA;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #FEFEFE;
+            color: #333;
+            font-size: 13px;
+        }
+        QComboBox:focus {
+            border: 2px solid #8B1E2D;
         }
         QPushButton {
             background: #8B1E2D;
             color: white;
-            border-radius: 8px;
-            padding: 8px 16px;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 13px;
+            border: none;
         }
         QPushButton:hover {
-            background: #7A1C2C;
+            background: #7A1A25;
+        }
+        QPushButton:pressed {
+            background: #6A1520;
+        }
+        QDialogButtonBox QPushButton[role='RejectRole'] {
+            background: #F5F5F5;
+            color: #666;
+        }
+        QDialogButtonBox QPushButton[role='RejectRole']:hover {
+            background: #E8E8E8;
+            color: #333;
+        }
+        QLabel {
+            color: #444;
+            font-size: 13px;
+            font-weight: 500;
         }
     )");
 

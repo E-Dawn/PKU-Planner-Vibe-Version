@@ -880,19 +880,41 @@ void DashboardPage::editCourseDirect(int index)
     if (index < 0 || index >= courses.size()) return;
 
     Course c = courses[index];
-    
+
     CourseEditDialog dialog(c.startPeriod, c.endPeriod);
     dialog.setWindowTitle("编辑课程");
     dialog.setCourseData(c.name, c.teacher, c.location, c.examTime, c.startPeriod, c.endPeriod, c.weekType);
-    
+
     if (dialog.exec() == QDialog::Accepted) {
-        c.name = dialog.getName();
-        c.teacher = dialog.getTeacher();
-        c.location = dialog.getLocation();
-        c.examTime = dialog.getExamTime();
-        c.startPeriod = dialog.getStart();
-        c.endPeriod = dialog.getEnd();
-        c.weekType = dialog.getWeekType();
+        const QString newName = dialog.getName();
+        const QString newTeacher = dialog.getTeacher();
+        const QString newLocation = dialog.getLocation();
+        const QString newExamTime = dialog.getExamTime();
+        int newStart = dialog.getStart();
+        int newEnd = dialog.getEnd();
+        int newWeekType = dialog.getWeekType();
+
+        bool basicInfoChanged = (newTeacher != c.teacher ||
+                                 newLocation != c.location ||
+                                 newExamTime != c.examTime);
+
+        bool timeChanged = (newStart != c.startPeriod ||
+                           newEnd != c.endPeriod ||
+                           newWeekType != c.weekType);
+
+        c.teacher = newTeacher;
+        c.location = newLocation;
+        c.examTime = newExamTime;
+
+        if (newName != c.name) {
+            c.name = newName;
+        }
+
+        if (timeChanged) {
+            c.startPeriod = newStart;
+            c.endPeriod = newEnd;
+            c.weekType = newWeekType;
+        }
 
         const QString originalName = courses[index].name;
         const auto allCourses = DataManager::instance().courses();
@@ -901,15 +923,13 @@ void DashboardPage::editCourseDirect(int index)
                 Course updated = allCourses[i];
                 updated.name = c.name;
                 updated.teacher = c.teacher;
-                updated.contact = c.contact;
                 updated.location = c.location;
                 updated.examTime = c.examTime;
-                updated.note = c.note;
-                updated.folderPath = c.folderPath;
-                updated.day = c.day;
-                updated.startPeriod = c.startPeriod;
-                updated.endPeriod = c.endPeriod;
-                updated.weekType = c.weekType;
+                if (timeChanged) {
+                    updated.startPeriod = c.startPeriod;
+                    updated.endPeriod = c.endPeriod;
+                    updated.weekType = c.weekType;
+                }
                 DataManager::instance().updateCourse(i, updated);
             }
         }

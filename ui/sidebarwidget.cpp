@@ -33,10 +33,9 @@ SidebarWidget::SidebarWidget(QWidget *parent)
 
         const QString buttonStyle = R"(
             QPushButton {
-                /* 默认使用半透明白背景，避免在深色侧栏上显示为纯白 */
-                background: rgba(94, 64, 64, 0.12);
-                color: white;
-                border: 1px solid rgba(255,255,255,0.14);
+                background: #FFE4E4;
+                color: #8B1E2D;
+                border: 1px solid transparent;
                 border-radius: 14px;
                 padding: 14px 16px;
                 min-height: 44px;
@@ -45,21 +44,22 @@ SidebarWidget::SidebarWidget(QWidget *parent)
                 font-weight: 600;
             }
             QPushButton:hover {
-                background: rgba(190, 116, 116, 0.22);
-                color: white;
+                background: #FFD7DA;
+                color: #8B1E2D;
             }
             QPushButton:pressed {
-                background: rgba(255,255,255,0.30);
+                background: #FFCDD2;
+                color: #8B1E2D;
             }
-            /* 更明显的选中态，便于与背景区分 */
             QPushButton:checked {
-                background: #FFD7DA;
-                color: #7E1D2D;
-                border: 1px solid #FFD7DA;
+                background: #8B1E2D;
+                color: white;
+                border: 1px solid #8B1E2D;
             }
         )";
     btnDashboard->setStyleSheet(buttonStyle);
     btnTodo->setStyleSheet(buttonStyle);
+    btnStats->setStyleSheet(buttonStyle);
     btnDashboard->setCheckable(true);
     btnTodo->setCheckable(true);
     btnStats->setCheckable(true);
