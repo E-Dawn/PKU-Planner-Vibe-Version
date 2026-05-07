@@ -109,4 +109,11 @@ SidebarWidget::SidebarWidget(QWidget *parent)
         btnStats->setChecked(false);
         emit pageChanged(3);
     });
+
+    connect(this, &SidebarWidget::pageChanged, [=](int page){
+        btnDashboard->setChecked(page == 0);
+        btnTodo->setChecked(page == 1);
+        btnStats->setChecked(page == 2);
+        btnSettings->setChecked(page == 3);
+    });
 }

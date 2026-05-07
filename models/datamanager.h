@@ -35,6 +35,7 @@ public:
     // 持久化
     bool load();
     bool save();
+    QString storageDir() const;
 
 signals:
     void coursesChanged();

@@ -50,7 +50,7 @@ CourseTaskPage::CourseTaskPage(QWidget* parent)
     root->setSpacing(12);
 
     QFrame* titleCard = new QFrame(this);
-    titleCard->setStyleSheet("QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}");
+    titleCard->setStyleSheet("QFrame{background:white;border-radius:20px;}");
     QVBoxLayout* titleLayout = new QVBoxLayout(titleCard);
     titleLayout->setContentsMargins(18, 16, 18, 16);
     titleLayout->setSpacing(4);
@@ -65,7 +65,7 @@ CourseTaskPage::CourseTaskPage(QWidget* parent)
     root->addWidget(titleCard);
 
     QFrame* filterCard = new QFrame(this);
-    filterCard->setStyleSheet("QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}");
+    filterCard->setStyleSheet("QFrame{background:white;border-radius:20px;}");
     QHBoxLayout* filterLayout = new QHBoxLayout(filterCard);
     filterLayout->setContentsMargins(14, 12, 14, 12);
     filterLayout->setSpacing(8);

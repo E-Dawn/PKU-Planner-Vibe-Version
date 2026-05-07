@@ -25,7 +25,7 @@ CourseHeaderWidget::CourseHeaderWidget(QWidget* parent)
 
     for (QPushButton* b : {addTaskBtn, editBtn, folderBtn}) {
         b->setCursor(Qt::PointingHandCursor);
-        b->setStyleSheet("border-radius:8px; padding:6px 10px; background:#FAFAFA; border:1px solid #E8E8E8;");
+        b->setStyleSheet("border-radius:10px; padding:6px 10px; background:#FAFAFA;");
     }
 
     top->addWidget(addTaskBtn, 0, Qt::AlignRight);
@@ -35,7 +35,7 @@ CourseHeaderWidget::CourseHeaderWidget(QWidget* parent)
     QPushButton* closeBtn = new QPushButton("✕", this);
     closeBtn->setFixedSize(28, 28);
     closeBtn->setCursor(Qt::PointingHandCursor);
-    closeBtn->setStyleSheet("QPushButton{background:#FAFAFA;border:1px solid #E8E8E8;border-radius:6px;font-size:14px;color:#999;}"
+    closeBtn->setStyleSheet("QPushButton{background:#FAFAFA;border-radius:8px;font-size:14px;color:#999;}"
                             "QPushButton:hover{background:#F0F0F0;color:#666;}");
     top->addWidget(closeBtn, 0, Qt::AlignRight);
 

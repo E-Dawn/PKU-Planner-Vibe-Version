@@ -114,7 +114,7 @@ QWidget* CourseInfoPage::createProgressCard()
 {
     QFrame* card = new QFrame(this);
     card->setStyleSheet(
-        "QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}"
+        "QFrame{background:white;border-radius:20px;}"
     );
 
     QVBoxLayout* layout = new QVBoxLayout(card);
@@ -159,7 +159,7 @@ QWidget* CourseInfoPage::createProgressCard()
 QWidget* CourseInfoPage::createScheduleCard()
 {
     QFrame* card = new QFrame(this);
-    card->setStyleSheet("QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}");
+    card->setStyleSheet("QFrame{background:white;border-radius:20px;}");
 
     QVBoxLayout* layout = new QVBoxLayout(card);
     layout->setContentsMargins(18, 16, 18, 16);
@@ -186,7 +186,7 @@ QWidget* CourseInfoPage::createScheduleCard()
 QWidget* CourseInfoPage::createExamCard()
 {
     QFrame* card = new QFrame(this);
-    card->setStyleSheet("QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}");
+    card->setStyleSheet("QFrame{background:white;border-radius:20px;}");
 
     QVBoxLayout* layout = new QVBoxLayout(card);
     layout->setContentsMargins(18, 16, 18, 16);
@@ -209,7 +209,7 @@ QWidget* CourseInfoPage::createExamCard()
 QWidget* CourseInfoPage::createTeacherCard()
 {
     QFrame* card = new QFrame(this);
-    card->setStyleSheet("QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}");
+    card->setStyleSheet("QFrame{background:white;border-radius:20px;}");
 
     QVBoxLayout* layout = new QVBoxLayout(card);
     layout->setContentsMargins(18, 16, 18, 16);
@@ -234,7 +234,7 @@ QWidget* CourseInfoPage::createTeacherCard()
 QWidget* CourseInfoPage::createNoteCard()
 {
     QFrame* card = new QFrame(this);
-    card->setStyleSheet("QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}");
+    card->setStyleSheet("QFrame{background:white;border-radius:20px;}");
 
     QVBoxLayout* layout = new QVBoxLayout(card);
     layout->setContentsMargins(18, 16, 18, 16);

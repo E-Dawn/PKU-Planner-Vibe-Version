@@ -86,6 +86,8 @@ set(PROJECT_SOURCES
     pages/statspage.h
     pages/settingspage.cpp
     pages/settingspage.h
+    services/configservice.cpp
+    services/configservice.h
 )
 
 qt_add_executable(PKUPlanner

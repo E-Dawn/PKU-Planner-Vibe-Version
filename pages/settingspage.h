@@ -5,8 +5,13 @@
 #include <QCheckBox>
 #include <QPushButton>
 #include <QComboBox>
+#include <QLabel>
 #include <QVBoxLayout>
 #include <QSettings>
+#include <QFrame>
+#include <QDir>
+#include <QDateEdit>
+#include <QProgressBar>
 
 class SettingsPage : public QWidget
 {
@@ -19,11 +24,28 @@ private:
     QCheckBox *reminderCheck;
     QComboBox *reminderInterval;
     QPushButton *exportBtn;
-    QPushButton *importBtn;
+    QLabel *statusLabel;
+
+    QLabel *semesterNameLabel;
+    QLabel *startDateLabel;
+    QLabel *endDateLabel;
+    QLabel *percentLabel;
+    QLabel *weeksLeftLabel;
+    QLabel *singleWeekLabel;
+    QProgressBar *progressBar;
+
+    QFrame* createReminderCard();
+    QFrame* createSemesterCard();
+    QFrame* createDataCard();
+    QFrame* createAboutCard();
 
     void loadSettings();
     void saveSettings();
     void exportToCSV();
+    void openDataFolder();
+    void clearAllData();
+    void editSemester();
+    void updateSemesterDisplay();
 };
 
 #endif

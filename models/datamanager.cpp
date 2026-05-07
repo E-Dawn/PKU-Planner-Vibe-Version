@@ -141,6 +141,11 @@ bool DataManager::save()
     return coursesSaved && tasksSaved;
 }
 
+QString DataManager::storageDir() const
+{
+    return m_storageDir;
+}
+
 bool DataManager::loadCourses()
 {
     qDebug() << "[DataManager] loadCourses() starting";
@@ -241,8 +246,12 @@ bool DataManager::saveTasks()
         obj["deadline"] = task.deadline.toString(Qt::ISODate);
         obj["priority"] = task.priority;
         obj["completed"] = task.completed;
-        if (task.completedAt.isValid()) {
-            obj["completedAt"] = task.completedAt.toString(Qt::ISODate);
+        if (task.completed) {
+            if (task.completedAt.isValid()) {
+                obj["completedAt"] = task.completedAt.toString(Qt::ISODate);
+            } else {
+                obj["completedAt"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+            }
         }
         arr.append(obj);
     }

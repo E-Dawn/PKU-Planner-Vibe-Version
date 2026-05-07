@@ -134,6 +134,7 @@ void CourseDetailDrawer::loadCourse(const Course& course)
     basicInfoPage->loadCourse(course);
     taskPage->loadCourseTasks(course.name);
     filePage->loadCourse(course);
+    statsWidget->loadCourse(course);
 }
 
 void CourseDetailDrawer::openDrawer()

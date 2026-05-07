@@ -152,8 +152,8 @@ TodoPage::TodoPage(QWidget *parent)
     mainLayout->addWidget(hero);
 
     QFrame *filterCard = new QFrame;
-    filterCard->setStyleSheet(QString("background:%1; border-radius:%2px; border:1px solid %3;")
-        .arg(Theme::CARD_BG).arg(Theme::CARD_RADIUS).arg(Theme::BORDER));
+    filterCard->setStyleSheet(QString("background:%1; border-radius:%2px;")
+        .arg(Theme::CARD_BG).arg(Theme::CARD_RADIUS));
     QVBoxLayout *filterLayout = new QVBoxLayout(filterCard);
     filterLayout->setContentsMargins(12, 12, 12, 12);
     filterLayout->setSpacing(10);

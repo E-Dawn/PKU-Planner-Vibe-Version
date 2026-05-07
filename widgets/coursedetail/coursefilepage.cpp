@@ -53,7 +53,7 @@ CourseFilePage::CourseFilePage(QWidget* parent)
     root->addWidget(title);
 
     QFrame* bindCard = new QFrame(this);
-    bindCard->setStyleSheet("QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}");
+    bindCard->setStyleSheet("QFrame{background:white;border-radius:20px;}");
     QVBoxLayout* bindLayout = new QVBoxLayout(bindCard);
     bindLayout->setContentsMargins(18, 16, 18, 16);
     bindLayout->setSpacing(10);
@@ -85,7 +85,7 @@ CourseFilePage::CourseFilePage(QWidget* parent)
     root->addWidget(bindCard);
 
     QFrame* quickCard = new QFrame(this);
-    quickCard->setStyleSheet("QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}");
+    quickCard->setStyleSheet("QFrame{background:white;border-radius:20px;}");
     QVBoxLayout* quickLayout = new QVBoxLayout(quickCard);
     quickLayout->setContentsMargins(18, 16, 18, 16);
     quickLayout->setSpacing(10);
@@ -111,7 +111,7 @@ CourseFilePage::CourseFilePage(QWidget* parent)
     root->addWidget(quickCard);
 
     QFrame* recentCard = new QFrame(this);
-    recentCard->setStyleSheet("QFrame{background:white;border-radius:18px;border:1px solid #EFEAEA;}");
+    recentCard->setStyleSheet("QFrame{background:white;border-radius:20px;}");
     QVBoxLayout* recentLayout = new QVBoxLayout(recentCard);
     recentLayout->setContentsMargins(18, 16, 18, 16);
     recentLayout->setSpacing(10);

@@ -23,6 +23,7 @@
 #include <QStringList>
 
 #include "../models/datamanager.h"
+#include "../services/configservice.h"
 #include "../dialogs/courseeditdialog.h"
 #include "../dialogs/courseactiondialog.h"
 #include "../dialogs/taskeditdialog.h"
@@ -106,7 +107,7 @@ DashboardPage::DashboardPage(QWidget *parent)
 
     // 左：课程表
     QFrame *courseCard = new QFrame;
-    courseCard->setStyleSheet("background:white; border-radius:16px; border:1px solid #ECECEC;");
+    courseCard->setStyleSheet("background:white; border-radius:20px;");
     QVBoxLayout *courseLayout = new QVBoxLayout(courseCard);
 
     QLabel *courseTitle = new QLabel("课程表");
@@ -139,6 +140,12 @@ DashboardPage::DashboardPage(QWidget *parent)
     connect(&DataManager::instance(), &DataManager::tasksChanged, this, &DashboardPage::renderCourses);
     connect(&DataManager::instance(), &DataManager::coursesChanged, this, &DashboardPage::updateBottomStats);
     connect(&DataManager::instance(), &DataManager::tasksChanged, this, &DashboardPage::updateBottomStats);
+
+    // Connect to ConfigService for semester changes
+    connect(&ConfigService::instance(), &ConfigService::configChanged, this, &DashboardPage::updateWeekInfo);
+
+    // Initial week info from ConfigService
+    updateWeekInfo();
 }
 
 QWidget* DashboardPage::createTopBar()
@@ -205,12 +212,23 @@ QWidget* DashboardPage::createTopBar()
 
 void DashboardPage::updateWeekInfo()
 {
-    if(currentWeek < 1) currentWeek = 1;
-    if(currentWeek > 18) currentWeek = 18;
+    currentWeek = ConfigService::instance().getCurrentWeek();
+    bool isSingle = ConfigService::instance().isSingleWeek();
 
+    int maxWeek = 18;
+    QDate startDate = ConfigService::instance().getSemesterStart();
+    QDate endDate = ConfigService::instance().getSemesterEnd();
+    if (startDate.isValid() && endDate.isValid()) {
+        maxWeek = qMax(1, startDate.daysTo(endDate) / 7);
+    }
+
+    if(currentWeek < 1) currentWeek = 1;
+    if(currentWeek > maxWeek) currentWeek = maxWeek;
+
+    semesterProgress->setRange(0, maxWeek);
     semesterProgress->setValue(currentWeek);
 
-    QString type = (currentWeek % 2 == 1) ? "单周" : "双周";
+    QString type = isSingle ? "单周" : "双周";
 
     weekLabel->setText(
         QString("第 %1 周 (%2)")
@@ -237,7 +255,7 @@ QWidget* DashboardPage::createBottomStats()
     {
         QFrame *card = new QFrame;
         card->setStyleSheet(
-            "background:white;border-radius:12px;padding:8px; border:1px solid #ECECEC;"
+            "background:white;border-radius:14px;padding:8px;"
         );
 
         QVBoxLayout *cl = new QVBoxLayout(card);
@@ -356,7 +374,7 @@ QWidget* DashboardPage::createRightPanel()
 
     // 今日课程卡
     QFrame *todayCard = new QFrame;
-    todayCard->setStyleSheet("background:white; border-radius:16px; border:1px solid #ECECEC;");
+    todayCard->setStyleSheet("background:white; border-radius:20px;");
     QVBoxLayout *todayLayout = new QVBoxLayout(todayCard);
     
     QLabel *todayTitle = new QLabel("今日课程");
@@ -369,7 +387,7 @@ QWidget* DashboardPage::createRightPanel()
 
     // DDL摘要卡
     QFrame *ddlCard = new QFrame;
-    ddlCard->setStyleSheet("background:white; border-radius:16px; border:1px solid #ECECEC;");
+    ddlCard->setStyleSheet("background:white; border-radius:20px;");
     ddlLayout = new QVBoxLayout(ddlCard);
     QLabel *ddlTitle = new QLabel("DDL提醒");
     ddlTitle->setStyleSheet("font-weight:700; font-size:16px; margin-bottom: 8px; color:#222;");
@@ -430,9 +448,8 @@ void DashboardPage::updateDDLWidget()
         QFrame *itemFrame = new QFrame;
         itemFrame->setStyleSheet(R"(
             QFrame {
-                background:#FAFAFA;
-                border:1px solid #ECECEC;
-                border-radius:12px;
+                background:#F8F8F8;
+                border-radius:14px;
             }
         )");
         QVBoxLayout *vl = new QVBoxLayout(itemFrame);
@@ -551,9 +568,8 @@ void DashboardPage::updateDDLWidget()
         if (task.completed) {
             itemFrame->setStyleSheet(R"(
                 QFrame {
-                    background:#F3F3F3;
-                    border:1px solid #E6E6E6;
-                    border-radius:12px;
+                    background:#F5F5F5;
+                    border-radius:14px;
                 }
             )");
         }
@@ -968,7 +984,7 @@ void DashboardPage::refreshCourseUrgency()
 QWidget* DashboardPage::createSuggestionCard()
 {
     QFrame *card = new QFrame;
-    card->setStyleSheet(QString("background:white; border-radius:%1px; border:1px solid %2;").arg(Theme::CARD_RADIUS).arg(Theme::BORDER));
+    card->setStyleSheet(QString("background:white; border-radius:20px;").arg(Theme::CARD_RADIUS));
     QVBoxLayout *layout = new QVBoxLayout(card);
     layout->setContentsMargins(16, 14, 16, 14);
     layout->setSpacing(8);

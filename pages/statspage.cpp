@@ -19,7 +19,7 @@
 namespace {
 QFrame* makeCard(const QString &title, const QString &value) {
     QFrame *card = new QFrame;
-    card->setStyleSheet("QFrame{background:white;border-radius:16px;padding:18px;}");
+    card->setStyleSheet("QFrame{background:white;border-radius:20px;padding:18px;}");
     QVBoxLayout *l = new QVBoxLayout(card);
     QLabel *t = new QLabel(title);
     t->setObjectName("title");
@@ -88,7 +88,7 @@ StatsPage::StatsPage(QWidget *parent)
 
     // 课程任务数量排行（进度条）
     QFrame *rankCard = new QFrame;
-    rankCard->setStyleSheet("QFrame{background:white;border-radius:16px;padding:16px;}");
+    rankCard->setStyleSheet("QFrame{background:white;border-radius:20px;padding:16px;}");
     QVBoxLayout *rankLayout = new QVBoxLayout(rankCard);
     QLabel *rankTitle = new QLabel("课程任务数量排行");
     rankTitle->setStyleSheet("font-weight:700;color:#222;margin-bottom:8px;");
@@ -100,7 +100,7 @@ StatsPage::StatsPage(QWidget *parent)
 
     // 热力日历（本月）
     QFrame *heatCard = new QFrame;
-    heatCard->setStyleSheet("QFrame{background:white;border-radius:16px;padding:16px;}");
+    heatCard->setStyleSheet("QFrame{background:white;border-radius:20px;padding:16px;}");
     QVBoxLayout *heatLayout = new QVBoxLayout(heatCard);
     QLabel *heatTitle = new QLabel("本月 DDL 热力图");
     heatTitle->setStyleSheet("font-weight:700;color:#222;margin-bottom:8px;");
@@ -112,7 +112,7 @@ StatsPage::StatsPage(QWidget *parent)
 
     // 趋势图（最近7天）
     QFrame *trendCard = new QFrame;
-    trendCard->setStyleSheet("QFrame{background:white;border-radius:16px;padding:16px;}");
+    trendCard->setStyleSheet("QFrame{background:white;border-radius:20px;padding:16px;}");
     QVBoxLayout *trendLayout = new QVBoxLayout(trendCard);
     QLabel *trendTitle = new QLabel("最近7天任务完成趋势");
     trendTitle->setStyleSheet("font-weight:700;color:#222;margin-bottom:8px;");
@@ -124,7 +124,7 @@ StatsPage::StatsPage(QWidget *parent)
 
     // 智能建议
     QFrame *suggestCard = new QFrame;
-    suggestCard->setStyleSheet("QFrame{background:white;border-radius:16px;padding:16px;}");
+    suggestCard->setStyleSheet("QFrame{background:white;border-radius:20px;padding:16px;}");
     QVBoxLayout *suggestLayout = new QVBoxLayout(suggestCard);
     QLabel *suggestTitle = new QLabel("智能建议");
     suggestTitle->setStyleSheet("font-weight:700;color:#222;margin-bottom:8px;");
@@ -135,6 +135,9 @@ StatsPage::StatsPage(QWidget *parent)
     root->addWidget(suggestCard);
 
     refresh();
+
+    connect(&DataManager::instance(), &DataManager::tasksChanged, this, &StatsPage::refresh);
+    connect(&DataManager::instance(), &DataManager::coursesChanged, this, &StatsPage::refresh);
 
     scrollArea->setWidget(contentWidget);
 
@@ -205,27 +208,27 @@ void StatsPage::updateSummary(const QList<Task>& tasks)
     int total = tasks.size();
     int completedCount = 0;
     int onTimeCount = 0;
-    double totalEarlyDays = 0;
-    int validEarlyCount = 0;
+    double totalDays = 0;
+    int validCount = 0;
 
     for (const Task& t : tasks) {
         if (t.completed) {
             completedCount++;
-            if (t.completedAt.isValid() && t.completedAt <= t.deadline) {
-                onTimeCount++;
+            if (t.completedAt.isValid()) {
+                if (t.completedAt <= t.deadline) {
+                    onTimeCount++;
+                }
                 qint64 secs = t.completedAt.secsTo(t.deadline);
                 double days = secs / 86400.0;
-                if (days > 0) {
-                    totalEarlyDays += days;
-                    validEarlyCount++;
-                }
+                totalDays += days;
+                validCount++;
             }
         }
     }
 
     double completionRate = total > 0 ? completedCount * 100.0 / total : 0;
     double onTimeRate = completedCount > 0 ? onTimeCount * 100.0 / completedCount : 0;
-    double avgEarly = validEarlyCount > 0 ? totalEarlyDays / validEarlyCount : 0;
+    double avgEarly = validCount > 0 ? totalDays / validCount : 0;
 
     QLabel* totalVal = cardTotal->findChild<QLabel*>("value");
     QLabel* doneVal = cardDone->findChild<QLabel*>("value");
