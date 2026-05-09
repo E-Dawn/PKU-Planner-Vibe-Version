@@ -21,6 +21,10 @@ public:
 
 signals:
     void courseUpdated(Course updatedCourse);
+    void editRequested(Course course);
+
+private slots:
+    void editContact();
 
 private:
     Course currentCourse;

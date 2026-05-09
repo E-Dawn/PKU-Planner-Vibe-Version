@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QShortcut>
 
 class QStackedWidget;
 class SidebarWidget;
@@ -28,6 +29,7 @@ private slots:
     void showMascotPopup();
     void onSearchCourseRequested(const QString& courseName);
     void onSearchTaskRequested(int taskIndex);
+    void focusSearch();
 
 private:
     QStackedWidget *stack;
@@ -37,6 +39,7 @@ private:
     TodoPage *todoPage = nullptr;
     CourseDetailDrawer *courseDrawer = nullptr;
     MascotWidget *mascotWidget = nullptr;
+    QShortcut *searchShortcut = nullptr;
     bool pagesInitialized = false;
     QString searchCourseName;
 };

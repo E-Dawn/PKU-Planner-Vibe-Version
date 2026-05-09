@@ -31,8 +31,13 @@ bool matchesFilters(const Task &task,
                     const QString &courseName,
                     const QString &timeFilter,
                     const QString &statusFilter,
-                    const QString &keyword)
+                    const QString &keyword,
+                    bool hideCompleted)
 {
+    if (hideCompleted && task.completed) {
+        return false;
+    }
+
     if (!courseName.isEmpty() && courseName != "全部课程" && task.course != courseName) {
         return false;
     }
@@ -227,6 +232,13 @@ QWidget* TodoPage::createFilterBar()
     statusFilter = new QComboBox;
     statusFilter->addItems({"全部状态", "未完成", "已完成"});
 
+    sortCombo = new QComboBox;
+    sortCombo->addItems({"按截止时间", "按优先级"});
+    sortCombo->setToolTip("排序方式");
+
+    hideCompletedCheck = new QCheckBox("隐藏已完成");
+    hideCompletedCheck->setToolTip("隐藏已完成的任务");
+
     QPushButton *refreshButton = new QPushButton("🔄 刷新");
     refreshButton->setStyleSheet(QString(R"(
         QPushButton {
@@ -328,12 +340,16 @@ QWidget* TodoPage::createFilterBar()
     layout->addWidget(courseFilter, 1);
     layout->addWidget(timeFilter, 1);
     layout->addWidget(statusFilter, 1);
+    layout->addWidget(sortCombo, 1);
+    layout->addWidget(hideCompletedCheck);
     layout->addWidget(refreshButton);
 
     connect(searchEdit, &QLineEdit::textChanged, this, &TodoPage::applyFilter);
     connect(courseFilter, &QComboBox::currentTextChanged, this, &TodoPage::applyFilter);
     connect(timeFilter, &QComboBox::currentTextChanged, this, &TodoPage::applyFilter);
     connect(statusFilter, &QComboBox::currentTextChanged, this, &TodoPage::applyFilter);
+    connect(sortCombo, &QComboBox::currentTextChanged, this, &TodoPage::applyFilter);
+    connect(hideCompletedCheck, &QCheckBox::toggled, this, &TodoPage::applyFilter);
     connect(refreshButton, &QPushButton::clicked, this, &TodoPage::refreshTasks);
 
     return bar;
@@ -395,19 +411,27 @@ void TodoPage::applyFilter()
                                courseFilter ? courseFilter->currentText() : QString(),
                                timeFilter ? timeFilter->currentText() : QString(),
                                statusFilter ? statusFilter->currentText() : QString(),
-                               searchEdit ? searchEdit->text() : QString());
+                               searchEdit ? searchEdit->text() : QString(),
+                               hideCompletedCheck ? hideCompletedCheck->isChecked() : false);
     }), visible.end());
 
-    std::sort(visible.begin(), visible.end(), [](const TaskViewItem &left, const TaskViewItem &right) {
+    std::sort(visible.begin(), visible.end(), [this](const TaskViewItem &left, const TaskViewItem &right) {
         if (left.task.completed != right.task.completed) {
             return !left.task.completed && right.task.completed;
         }
-        if (left.task.deadline != right.task.deadline) {
-            return left.task.deadline < right.task.deadline;
+
+        QString sortType = sortCombo ? sortCombo->currentText() : QString("按截止时间");
+
+        if (sortType == "按截止时间") {
+            if (left.task.deadline != right.task.deadline) {
+                return left.task.deadline < right.task.deadline;
+            }
+        } else if (sortType == "按优先级") {
+            if (left.task.priority != right.task.priority) {
+                return left.task.priority > right.task.priority;
+            }
         }
-        if (left.task.priority != right.task.priority) {
-            return left.task.priority > right.task.priority;
-        }
+
         return left.task.title < right.task.title;
     });
 

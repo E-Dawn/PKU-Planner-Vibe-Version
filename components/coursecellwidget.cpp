@@ -175,15 +175,23 @@ void CourseCellWidget::mouseDoubleClickEvent(QMouseEvent *)
     {
         if(m_index != -1)
         {
-            // Emit drawer-opening signal with full Course data
             const auto courses = DataManager::instance().courses();
             if (m_index >=0 && m_index < courses.size()) {
-                emit courseDoubleClicked(courses[m_index]);
-            } else {
                 emit editCourseRequested(m_index);
             }
         }
     }
+}
+
+void CourseCellWidget::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && m_index != -1 && !title->text().isEmpty()) {
+        const auto courses = DataManager::instance().courses();
+        if (m_index >= 0 && m_index < courses.size()) {
+            emit courseClicked(courses[m_index]);
+        }
+    }
+    QFrame::mousePressEvent(event);
 }
 
 void CourseCellWidget::contextMenuEvent(QContextMenuEvent *event)

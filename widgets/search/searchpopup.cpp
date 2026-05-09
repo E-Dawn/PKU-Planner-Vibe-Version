@@ -54,9 +54,10 @@ SearchPopup::SearchPopup(QWidget* parent)
     setMaximumHeight(400);
 }
 
-void SearchPopup::showResults(const QVector<SearchResult>& results)
+void SearchPopup::showResults(const QVector<SearchResult>& results, const QString& keyword)
 {
     clearResults();
+    currentKeyword = keyword;
 
     QVector<SearchResult> courses;
     QVector<SearchResult> tasks;
@@ -70,82 +71,9 @@ void SearchPopup::showResults(const QVector<SearchResult>& results)
         }
     }
 
-    auto addSection = [this](const QString& title, const QString& icon, const QVector<SearchResult>& items) {
-        if (items.isEmpty()) return;
-
-        QFrame* section = new QFrame(contentWidget);
-        section->setStyleSheet("QFrame { background: transparent; }");
-        QVBoxLayout* sectionLayout = new QVBoxLayout(section);
-        sectionLayout->setContentsMargins(0, 8, 0, 4);
-        sectionLayout->setSpacing(6);
-
-        QLabel* titleLabel = new QLabel(icon + " " + title, section);
-        titleLabel->setStyleSheet("color: #888; font-size: 12px; font-weight: 600; padding: 4px 0;");
-        sectionLayout->addWidget(titleLabel);
-
-        for (const SearchResult& r : items) {
-            ClickableFrame* item = new ClickableFrame(section);
-            item->setCursor(Qt::PointingHandCursor);
-            item->setStyleSheet(QString(R"(
-                QFrame {
-                    background: %1;
-                    border-radius: 10px;
-                    padding: 10px 12px;
-                }
-                QFrame:hover {
-                    background: %2;
-                }
-            )").arg(Theme::PRIMARY_LIGHTER).arg(Theme::PRIMARY_LIGHT));
-
-            QHBoxLayout* itemLayout = new QHBoxLayout(item);
-            itemLayout->setContentsMargins(8, 6, 8, 6);
-            itemLayout->setSpacing(10);
-
-            QLabel* iconLabel = new QLabel(r.icon, item);
-            iconLabel->setStyleSheet("font-size: 20px;");
-            itemLayout->addWidget(iconLabel);
-
-            QVBoxLayout* textLayout = new QVBoxLayout;
-            textLayout->setSpacing(2);
-            QLabel* titleLabel2 = new QLabel(r.title, item);
-            titleLabel2->setStyleSheet("color: #222; font-size: 14px; font-weight: 600;");
-            textLayout->addWidget(titleLabel2);
-
-            QLabel* subtitleLabel = new QLabel(r.subtitle, item);
-            subtitleLabel->setStyleSheet("color: #888; font-size: 12px;");
-            subtitleLabel->setWordWrap(true);
-            textLayout->addWidget(subtitleLabel);
-
-            itemLayout->addLayout(textLayout, 1);
-            sectionLayout->addWidget(item);
-
-            switch (r.type) {
-                case SearchResult::Course:
-                    connect(item, &ClickableFrame::clicked, this, [this, r]() {
-                        emit courseSelected(r.id);
-                    });
-                    break;
-                case SearchResult::Task:
-                    connect(item, &ClickableFrame::clicked, this, [this, r]() {
-                        bool ok;
-                        int index = r.id.toInt(&ok);
-                        if (ok) emit taskSelected(index);
-                    });
-                    break;
-                case SearchResult::File:
-                    connect(item, &ClickableFrame::clicked, this, [this, r]() {
-                        emit fileSelected(r.id);
-                    });
-                    break;
-            }
-        }
-
-        resultsLayout->addWidget(section);
-    };
-
-    addSection("课程", "📚", courses);
-    addSection("任务", "📝", tasks);
-    addSection("文件", "📄", files);
+    addSection("课程", "📚", courses, keyword);
+    addSection("任务", "📝", tasks, keyword);
+    addSection("文件", "📄", files, keyword);
 
     if (results.isEmpty()) {
         QLabel* noResult = new QLabel("未找到相关内容", contentWidget);
@@ -156,6 +84,98 @@ void SearchPopup::showResults(const QVector<SearchResult>& results)
 
     resultsLayout->addStretch();
     setMinimumHeight(qMin(400, 60 + results.size() * 70));
+}
+
+void SearchPopup::addSection(const QString& title, const QString& icon, const QVector<SearchResult>& items, const QString& keyword)
+{
+    if (items.isEmpty()) return;
+
+    QFrame* section = new QFrame(contentWidget);
+    section->setStyleSheet("QFrame { background: transparent; }");
+    QVBoxLayout* sectionLayout = new QVBoxLayout(section);
+    sectionLayout->setContentsMargins(0, 8, 0, 4);
+    sectionLayout->setSpacing(6);
+
+    QLabel* titleLabel = new QLabel(icon + " " + title, section);
+    titleLabel->setStyleSheet("color: #888; font-size: 12px; font-weight: 600; padding: 4px 0;");
+    sectionLayout->addWidget(titleLabel);
+
+    for (const SearchResult& r : items) {
+        ClickableFrame* item = new ClickableFrame(section);
+        item->setCursor(Qt::PointingHandCursor);
+        item->setStyleSheet(QString(R"(
+            QFrame {
+                background: %1;
+                border-radius: 10px;
+                padding: 10px 12px;
+            }
+            QFrame:hover {
+                background: %2;
+            }
+        )").arg(Theme::PRIMARY_LIGHTER).arg(Theme::PRIMARY));
+
+        QHBoxLayout* itemLayout = new QHBoxLayout(item);
+        itemLayout->setContentsMargins(8, 6, 8, 6);
+        itemLayout->setSpacing(10);
+
+        QLabel* iconLabel = new QLabel(r.icon, item);
+        iconLabel->setStyleSheet("font-size: 20px;");
+        itemLayout->addWidget(iconLabel);
+
+        QVBoxLayout* textLayout = new QVBoxLayout;
+        textLayout->setSpacing(2);
+        QLabel* titleLabel2 = new QLabel(highlightText(r.title, keyword), item);
+        titleLabel2->setStyleSheet("color: #222; font-size: 14px; font-weight: 600;");
+        textLayout->addWidget(titleLabel2);
+
+        QLabel* subtitleLabel = new QLabel(highlightText(r.subtitle, keyword), item);
+        subtitleLabel->setStyleSheet("color: #888; font-size: 12px;");
+        subtitleLabel->setWordWrap(true);
+        textLayout->addWidget(subtitleLabel);
+
+        itemLayout->addLayout(textLayout, 1);
+        sectionLayout->addWidget(item);
+
+        switch (r.type) {
+            case SearchResult::Course:
+                connect(item, &ClickableFrame::clicked, this, [this, r]() {
+                    emit courseSelected(r.id);
+                });
+                break;
+            case SearchResult::Task:
+                connect(item, &ClickableFrame::clicked, this, [this, r]() {
+                    bool ok;
+                    int index = r.id.toInt(&ok);
+                    if (ok) emit taskSelected(index);
+                });
+                break;
+            case SearchResult::File:
+                connect(item, &ClickableFrame::clicked, this, [this, r]() {
+                    emit fileSelected(r.id);
+                });
+                break;
+        }
+    }
+
+    resultsLayout->addWidget(section);
+}
+
+QString SearchPopup::highlightText(const QString& text, const QString& keyword)
+{
+    if (keyword.isEmpty()) return text;
+
+    QString lowerText = text.toLower();
+    QString lowerKeyword = keyword.toLower();
+
+    int index = lowerText.indexOf(lowerKeyword);
+    if (index >= 0) {
+        QString before = text.left(index);
+        QString match = text.mid(index, keyword.length());
+        QString after = text.mid(index + keyword.length());
+        return before + "<span style=\"color:#C62828;font-weight:700;\">" + match + "</span>" + after;
+    }
+
+    return text;
 }
 
 void SearchPopup::clearResults()

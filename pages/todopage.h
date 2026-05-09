@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QCheckBox>
 
 class QScrollArea;
 class QVBoxLayout;
@@ -25,6 +26,8 @@ private:
     QComboBox *courseFilter = nullptr;
     QComboBox *timeFilter = nullptr;
     QComboBox *statusFilter = nullptr;
+    QComboBox *sortCombo = nullptr;
+    QCheckBox *hideCompletedCheck = nullptr;
     QLineEdit *searchEdit = nullptr;
     QLabel *summaryLabel = nullptr;
     QScrollArea *scrollArea = nullptr;

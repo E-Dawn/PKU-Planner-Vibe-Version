@@ -113,6 +113,7 @@ void CourseDetailDrawer::setupUI()
         tabBar->setCurrentTab(2);
     });
     connect(basicInfoPage, &CourseInfoPage::courseUpdated, this, &CourseDetailDrawer::courseUpdated);
+    connect(basicInfoPage, &CourseInfoPage::editRequested, this, &CourseDetailDrawer::editCourseRequested);
     connect(taskPage, &CourseTaskPage::taskUpdated, this, &CourseDetailDrawer::taskUpdated);
     connect(taskPage, &CourseTaskPage::addTaskRequested, this, [this](const QString &) {
         emit addTaskRequested(currentCourse);

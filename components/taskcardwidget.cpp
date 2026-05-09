@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QMouseEvent>
 
 namespace {
 QString courseTagStyle()
@@ -126,6 +127,33 @@ TaskCardWidget::TaskCardWidget(const Task &task, QWidget *parent)
     root->addLayout(metaRow);
     root->addLayout(actionRow);
 
+    detailPanel = new QWidget;
+    detailPanel->setVisible(false);
+    QVBoxLayout *detailLayout = new QVBoxLayout(detailPanel);
+    detailLayout->setContentsMargins(0, 8, 0, 0);
+    detailLayout->setSpacing(6);
+
+    QLabel *notesLabel = new QLabel;
+    notesLabel->setWordWrap(true);
+    notesLabel->setStyleSheet("color:#666; font-size:13px; background:#FAFAFA; padding:8px; border-radius:8px;");
+    detailLayout->addWidget(notesLabel);
+
+    QLabel *estTimeLabel = new QLabel;
+    estTimeLabel->setStyleSheet("color:#888; font-size:12px;");
+    detailLayout->addWidget(estTimeLabel);
+
+    root->addWidget(detailPanel);
+
+    connect(this, &TaskCardWidget::clicked, this, [this, notesLabel, estTimeLabel]() {
+        m_expanded = !m_expanded;
+        detailPanel->setVisible(m_expanded);
+        if (m_expanded) {
+            notesLabel->setText(m_task.title);
+            estTimeLabel->setText(QString("截止 %1 | 课程: %2").arg(m_task.deadline.toString("MM-dd hh:mm")).arg(m_task.course));
+        }
+        adjustSize();
+    });
+
     connect(doneBox, &QCheckBox::toggled, this, [this](bool checked) {
         m_task.completed = checked;
         updateVisualState();
@@ -239,4 +267,12 @@ void TaskCardWidget::updateVisualState()
     if (completeBtn) {
         completeBtn->setText(m_task.completed ? QStringLiteral("标为未完成") : QStringLiteral("✓ 完成"));
     }
+}
+
+void TaskCardWidget::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        emit clicked();
+    }
+    QFrame::mousePressEvent(event);
 }

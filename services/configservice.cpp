@@ -25,6 +25,7 @@ ConfigService::ConfigService()
     , m_onboardingShown(false)
     , m_semesterStart(QDate(2026, 3, 1))
     , m_semesterEnd(QDate(2026, 6, 28))
+    , m_lastSummaryDate()
 {
     load();
 }

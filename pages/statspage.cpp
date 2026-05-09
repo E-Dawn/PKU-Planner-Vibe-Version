@@ -4,6 +4,7 @@
 #include "../models/course.h"
 #include "../ui/theme.h"
 #include "../components/emptystatewidget.h"
+#include "../widgets/dialogs/weeklysummarydialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -15,6 +16,7 @@
 #include <QMap>
 #include <QVector>
 #include <QScrollArea>
+#include <QPushButton>
 #include <algorithm>
 
 namespace {
@@ -70,9 +72,34 @@ StatsPage::StatsPage(QWidget *parent)
     title->setStyleSheet("font-size:18px;font-weight:700;color:#222;");
     root->addWidget(title);
 
+    QHBoxLayout *titleRow = new QHBoxLayout;
+    titleRow->setSpacing(8);
     QLabel *subtitle = new QLabel("本学期效率概览");
     subtitle->setStyleSheet("color:#888;font-size:12px;margin-bottom:8px;");
-    root->addWidget(subtitle);
+    titleRow->addWidget(subtitle);
+    titleRow->addStretch();
+
+    QPushButton *summaryBtn = new QPushButton("📊 周总结");
+    summaryBtn->setCursor(Qt::PointingHandCursor);
+    summaryBtn->setFixedHeight(28);
+    summaryBtn->setStyleSheet(QString(R"(
+        QPushButton {
+            background: %1;
+            border: none;
+            border-radius: 14px;
+            padding: 0 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        QPushButton:hover {
+            background: %2;
+        }
+    )").arg(Theme::PRIMARY).arg(Theme::PRIMARY_DARK));
+    connect(summaryBtn, &QPushButton::clicked, this, &StatsPage::showWeeklySummary);
+    titleRow->addWidget(summaryBtn);
+
+    root->addLayout(titleRow);
 
     // 四个统计卡片
     QHBoxLayout *cards = new QHBoxLayout;
@@ -522,4 +549,10 @@ void StatsPage::updateSuggestions(const QList<Task>& tasks, const QList<Course>&
 void StatsPage::refreshData()
 {
     refresh();
+}
+
+void StatsPage::showWeeklySummary()
+{
+    WeeklySummaryDialog dlg(this);
+    dlg.exec();
 }

@@ -91,7 +91,7 @@ void TopbarWidget::doSearch()
     }
 
     QVector<SearchResult> results = SearchService::search(text);
-    searchPopup->showResults(results);
+    searchPopup->showResults(results, text);
 
     if (!results.isEmpty()) {
         positionPopup();

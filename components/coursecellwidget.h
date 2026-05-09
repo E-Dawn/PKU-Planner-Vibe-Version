@@ -26,10 +26,12 @@ signals:
     void addDDLRequested(const QString &courseName);
     void navigateToTodoPageRequested();
     void courseDoubleClicked(const Course& course);
+    void courseClicked(const Course& course);
 
 protected:
     void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
 

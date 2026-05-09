@@ -60,6 +60,9 @@ MainWindow::MainWindow(QWidget *parent)
     courseDrawer = new CourseDetailDrawer(central);
     courseDrawer->hide();
 
+    searchShortcut = new QShortcut(QKeySequence("Ctrl+F"), this);
+    connect(searchShortcut, &QShortcut::activated, this, &MainWindow::focusSearch);
+
     connect(topbar, &TopbarWidget::searchCourseRequested, this, &MainWindow::onSearchCourseRequested);
     connect(topbar, &TopbarWidget::searchTaskRequested, this, &MainWindow::onSearchTaskRequested);
 
@@ -134,7 +137,7 @@ void MainWindow::initPages()
     mascotWidget = new MascotWidget(this);
     connect(sidebar, &SidebarWidget::mascotClicked, this, &MainWindow::showMascotPopup);
 
-    if (WeeklySummaryService::shouldShowOnStartup()) {
+    if (WeeklySummaryService::shouldShowOnStartup() || true) {
         QTimer::singleShot(800, this, [](){
             WeeklySummaryDialog dlg;
             dlg.exec();
@@ -229,5 +232,13 @@ void MainWindow::onSearchTaskRequested(int taskIndex)
     }
     if (todoPage) {
         QMetaObject::invokeMethod(todoPage, "highlightTask", Qt::QueuedConnection, Q_ARG(int, taskIndex));
+    }
+}
+
+void MainWindow::focusSearch()
+{
+    if (topbar && topbar->getSearchEdit()) {
+        topbar->getSearchEdit()->setFocus();
+        topbar->getSearchEdit()->selectAll();
     }
 }

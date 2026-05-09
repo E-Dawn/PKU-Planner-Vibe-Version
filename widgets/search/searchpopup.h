@@ -28,17 +28,20 @@ class SearchPopup : public QWidget
     Q_OBJECT
 public:
     explicit SearchPopup(QWidget* parent = nullptr);
-    void showResults(const QVector<SearchResult>& results);
+    void showResults(const QVector<SearchResult>& results, const QString& keyword = QString());
 
-signals:
+ signals:
     void courseSelected(const QString& courseName);
     void taskSelected(int taskIndex);
     void fileSelected(const QString& filePath);
 
 private:
+    void addSection(const QString& title, const QString& icon, const QVector<SearchResult>& items, const QString& keyword);
     void clearResults();
+    QString highlightText(const QString& text, const QString& keyword);
     QVBoxLayout* resultsLayout;
     QWidget* contentWidget;
+    QString currentKeyword;
 };
 
 #endif

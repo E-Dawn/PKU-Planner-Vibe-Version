@@ -748,6 +748,11 @@ void DashboardPage::renderCourses()
             }
         });
 
+        connect(cell, &CourseCellWidget::courseClicked,
+                this, [this](const Course &course){
+            emit openCourseDetail(course);
+        });
+
         grid->addWidget(
             cell,
             c.startPeriod,

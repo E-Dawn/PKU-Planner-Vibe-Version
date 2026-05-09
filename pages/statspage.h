@@ -21,6 +21,9 @@ public:
     void refresh();
     void refreshData();
 
+private slots:
+    void showWeeklySummary();
+
 private:
     void updateEmptyState();
     void clearLayout(QLayout* layout);

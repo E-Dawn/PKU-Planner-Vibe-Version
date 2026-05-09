@@ -11,7 +11,7 @@
 #include <QVBoxLayout>
 #include <QStringList>
 #include <QSet>
-
+#include <QInputDialog>
 #include <algorithm>
 
 #include "../../models/datamanager.h"
@@ -104,9 +104,7 @@ CourseInfoPage::CourseInfoPage(QWidget* parent)
     root->addWidget(createNoteCard(), 1);
 
     connect(editBtn, &QPushButton::clicked, this, [this]() {
-        if (noteEdit) {
-            noteEdit->setFocus();
-        }
+        emit editRequested(currentCourse);
     });
 }
 
@@ -223,10 +221,14 @@ QWidget* CourseInfoPage::createTeacherCard()
 
     contactLabel = new QLabel("未填写联系方式", card);
     contactLabel->setStyleSheet("color:#7A746E;font-size:13px;");
+    contactLabel->setCursor(Qt::PointingHandCursor);
+    contactLabel->setToolTip("点击编辑联系方式");
 
     layout->addWidget(title);
     layout->addWidget(teacherLabel);
     layout->addWidget(contactLabel);
+
+    connect(contactLabel, &QLabel::linkActivated, this, &CourseInfoPage::editContact);
 
     return card;
 }
@@ -364,5 +366,19 @@ void CourseInfoPage::refreshProgress(int completedTasks, int totalTasks)
         } else {
             detailLabel->setText("暂未关联任务");
         }
+    }
+}
+
+void CourseInfoPage::editContact()
+{
+    bool ok = false;
+    QString text = QInputDialog::getText(this, "编辑联系方式",
+        "请输入教师联系方式（邮箱/电话/微信等）:",
+        QLineEdit::Normal, currentCourse.contact, &ok);
+
+    if (ok && text != currentCourse.contact) {
+        currentCourse.contact = text;
+        contactLabel->setText(text.trimmed().isEmpty() ? "未填写联系方式" : text);
+        emit courseUpdated(currentCourse);
     }
 }
