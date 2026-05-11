@@ -67,7 +67,7 @@ private:
 
     void updateDDLWidget();
     void updateTodayCourses();
-    void updateWeekInfo();
+    void updateWeekInfo(bool useCurrentWeek = false);
     QWidget* createSuggestionCard();
 };
 

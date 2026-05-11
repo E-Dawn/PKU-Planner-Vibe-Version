@@ -272,12 +272,14 @@ DashboardPage::DashboardPage(QWidget *parent)
     connect(&DataManager::instance(), &DataManager::tasksChanged, this, &DashboardPage::renderCourses);
     connect(&DataManager::instance(), &DataManager::coursesChanged, this, &DashboardPage::updateBottomStats);
     connect(&DataManager::instance(), &DataManager::tasksChanged, this, &DashboardPage::updateBottomStats);
+    connect(&DataManager::instance(), &DataManager::tasksChanged, this, &DashboardPage::updateDDLWidget);
 
     // Connect to ConfigService for semester changes
-    connect(&ConfigService::instance(), &ConfigService::configChanged, this, &DashboardPage::updateWeekInfo);
+    connect(&ConfigService::instance(), &ConfigService::configChanged, this, [this](){ updateWeekInfo(false); });
 
     // Initial week info from ConfigService
-    updateWeekInfo();
+    realWeek = ConfigService::instance().getCurrentWeek();
+    updateWeekInfo(false);
 }
 
 QWidget* DashboardPage::createTopBar()
@@ -324,28 +326,29 @@ QWidget* DashboardPage::createTopBar()
 
     connect(prevBtn,&QPushButton::clicked,this,[=](){
         currentWeek--;
-        updateWeekInfo();
+        updateWeekInfo(false);
     });
 
     connect(nextBtn,&QPushButton::clicked,this,[=](){
         currentWeek++;
-        updateWeekInfo();
+        updateWeekInfo(false);
     });
 
     connect(todayBtn,&QPushButton::clicked,this,[=](){
         currentWeek = realWeek;
-        updateWeekInfo();
+        updateWeekInfo(false);
     });
 
-    updateWeekInfo();
+    updateWeekInfo(false);
 
     return bar;
 }
 
-void DashboardPage::updateWeekInfo()
+void DashboardPage::updateWeekInfo(bool useCurrentWeek)
 {
-    currentWeek = ConfigService::instance().getCurrentWeek();
-    bool isSingle = ConfigService::instance().isSingleWeek();
+    if (useCurrentWeek) {
+        currentWeek = ConfigService::instance().getCurrentWeek();
+    }
 
     int maxWeek = 18;
     QDate startDate = ConfigService::instance().getSemesterStart();
@@ -360,13 +363,14 @@ void DashboardPage::updateWeekInfo()
     semesterProgress->setRange(0, maxWeek);
     semesterProgress->setValue(currentWeek);
 
-    QString type = isSingle ? "单周" : "双周";
+    QString type = (currentWeek % 2 == 1) ? "单周" : "双周";
 
     weekLabel->setText(
         QString("第 %1 周 (%2)")
             .arg(currentWeek)
             .arg(type)
     );
+    updateBottomStats();
     renderCourses();
 }
 
@@ -446,19 +450,21 @@ void DashboardPage::updateBottomStats()
     const QList<Task> tasks = DataManager::instance().tasks();
     const QDate today = QDate::currentDate();
     const int currentWeekday = today.dayOfWeek();
-    
+
     int currentYear = 0;
-    const int currentWeek = today.weekNumber(&currentYear);
+    const int displayWeek = currentWeek;
+    const bool isSingle = displayWeek % 2 == 1;
+    const int displayWeekday = (isSingle || displayWeek == realWeek) ? today.dayOfWeek() : 1;
 
     int todayCourseCount = 0;
     for (const Course &course : courses) {
-        if (course.day != currentWeekday) {
+        if (course.day != displayWeekday) {
             continue;
         }
-        if (course.weekType == 1 && currentWeek % 2 == 0) {
+        if (course.weekType == 1 && displayWeek % 2 == 0) {
             continue;
         }
-        if (course.weekType == 2 && currentWeek % 2 == 1) {
+        if (course.weekType == 2 && displayWeek % 2 == 1) {
             continue;
         }
         ++todayCourseCount;
@@ -479,12 +485,12 @@ void DashboardPage::updateBottomStats()
 
         int deadlineYear = 0;
         const int deadlineWeek = deadlineDate.weekNumber(&deadlineYear);
-        if (currentWeek == deadlineWeek && currentYear == deadlineYear) {
+        if (displayWeek == deadlineWeek && currentYear == deadlineYear) {
             ++weekDdlCount;
         }
     }
-    
-    qDebug() << "[updateBottomStats] Results - today courses:" << todayCourseCount 
+
+    qDebug() << "[updateBottomStats] Results - today courses:" << todayCourseCount
              << "today DDL:" << todayDdlCount << "week DDL:" << weekDdlCount;
 
     if (todayCourseValue) {
@@ -512,10 +518,10 @@ void DashboardPage::updateTodayCourses()
 
     const QList<Course> courses = DataManager::instance().courses();
     const QDate today = QDate::currentDate();
-    const int currentWeekday = today.dayOfWeek();
+    const int displayWeek = currentWeek;
+    const bool isSingle = displayWeek % 2 == 1;
+    const int displayWeekday = (isSingle || displayWeek == realWeek) ? today.dayOfWeek() : 1;
 
-    int currentYear = 0;
-    const int currentWeek = today.weekNumber(&currentYear);
     const QTime now = QTime::currentTime();
 
     struct CourseInfo {
@@ -526,9 +532,9 @@ void DashboardPage::updateTodayCourses()
     QVector<CourseInfo> todayCourses;
 
     for (const Course &course : courses) {
-        if (course.day != currentWeekday) continue;
-        if (course.weekType == 1 && currentWeek % 2 == 0) continue;
-        if (course.weekType == 2 && currentWeek % 2 == 1) continue;
+        if (course.day != displayWeekday) continue;
+        if (course.weekType == 1 && displayWeek % 2 == 0) continue;
+        if (course.weekType == 2 && displayWeek % 2 == 1) continue;
         if (course.startPeriod <= 0) continue;
 
         todayCourses.append({course.startPeriod, course.name, course.location});
@@ -778,6 +784,7 @@ void DashboardPage::updateDDLWidget()
                 updated.title = dialog.getTitle();
                 updated.deadline = dialog.getDeadline();
                 updated.priority = dialog.getPriority();
+                updated.completed = dialog.getCompleted();
                 DataManager::instance().updateTask(taskIndex, updated);
             }
         });
