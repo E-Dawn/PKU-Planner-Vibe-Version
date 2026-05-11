@@ -5,44 +5,41 @@ on:
   pull_request:
     branches: [ main, master ]
 
-# 解决 Node.js 24 弃用警告
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-test:
-    # 明确指定版本以避免迁移期的重定向警告
-    runs-on: windows-2022 
+    runs-on: windows-2022
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --- 新增这一步：激活 MSVC 环境 ---
-      - name: Set up MSVC Developer Command Prompt
+      # 1. 激活 MSVC 环境（这个保留，为了 nmake 和 cl.exe）
+      - name: Set up MSVC
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
 
-      - name: Set up Environment Path (Dynamic)
-        run: |
-          # 动态寻找 C:\Qt 下第一个以 6. 开头的文件夹中的 msvc 目录
-          $qtPath = Get-ChildItem -Path "C:\Qt\6.*" | Select-Object -First 1
-          $msvcPath = Join-Path $qtPath.FullName "msvc2022_64"
-          echo "Found Qt at: $msvcPath"
-          echo "$msvcPath\bin" >> $env:GITHUB_PATH
-          echo "CMAKE_PREFIX_PATH=$msvcPath" >> $env:GITHUB_ENV
-        shell: powershell
+      # 2. 关键：安装 Qt 6.6.0（你可以改成你喜欢的版本，如 6.6.3）
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.6.0'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          # 这个 action 会自动设置 CMAKE_PREFIX_PATH，你不用手写了
 
+      # 3. 运行你的编译脚本
       - name: Build and run unit tests
-        env:
-          QT_DIR: C:\Qt\6.6\msvc2022_64
-          CMAKE_PREFIX_PATH: C:\Qt\6.6\msvc2022_64
         run: |
           .\run_build.bat
         shell: cmd
 
       - name: Smoke test
+        # 记得在 smoke_test.bat 里加上 set QT_QPA_PLATFORM=offscreen
         run: |
           .\smoke_test.bat
         shell: cmd
