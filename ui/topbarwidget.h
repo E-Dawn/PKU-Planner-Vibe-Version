@@ -4,7 +4,10 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QTimer>
+#include <QVector>
+#include <QString>
 #include "../widgets/search/searchpopup.h"
+#include "../models/searchresult.h"
 
 class TopbarWidget : public QWidget
 {
@@ -33,6 +36,10 @@ private slots:
 private:
     void positionPopup();
     bool eventFilter(QObject *obj, QEvent *event) override;
+    QVector<SearchResult> search(const QString& keyword);
+    QVector<SearchResult> searchCourses(const QString& keyword);
+    QVector<SearchResult> searchTasks(const QString& keyword);
+    QVector<SearchResult> searchFiles(const QString& keyword);
 
     QLineEdit *searchEdit;
     SearchPopup *searchPopup;

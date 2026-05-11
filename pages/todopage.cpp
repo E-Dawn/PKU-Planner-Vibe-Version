@@ -22,11 +22,6 @@
 
 namespace {
 
-struct TaskViewItem {
-    Task task;
-    int sourceIndex = -1;
-};
-
 bool matchesFilters(const Task &task,
                     const QString &courseName,
                     const QString &timeFilter,
@@ -118,9 +113,9 @@ QFrame *makeSectionHeader(const QString &title, int count, const QString &accent
     return header;
 }
 
-QList<TaskViewItem> toViewItems(const QList<Task> &tasks)
+QList<TaskViewModel> toViewItems(const QList<Task> &tasks)
 {
-    QList<TaskViewItem> items;
+    QList<TaskViewModel> items;
     items.reserve(tasks.size());
     for (int i = 0; i < tasks.size(); ++i) {
         items.append({tasks[i], i});
@@ -404,9 +399,9 @@ void TodoPage::applyFilter()
     }
 
     const QList<Task> tasks = DataManager::instance().tasks();
-    QList<TaskViewItem> visible = toViewItems(tasks);
+    QList<TaskViewModel> visible = toViewItems(tasks);
 
-    visible.erase(std::remove_if(visible.begin(), visible.end(), [this](const TaskViewItem &item) {
+    visible.erase(std::remove_if(visible.begin(), visible.end(), [this](const TaskViewModel &item) {
         return !matchesFilters(item.task,
                                courseFilter ? courseFilter->currentText() : QString(),
                                timeFilter ? timeFilter->currentText() : QString(),
@@ -415,7 +410,7 @@ void TodoPage::applyFilter()
                                hideCompletedCheck ? hideCompletedCheck->isChecked() : false);
     }), visible.end());
 
-    std::sort(visible.begin(), visible.end(), [this](const TaskViewItem &left, const TaskViewItem &right) {
+    std::sort(visible.begin(), visible.end(), [this](const TaskViewModel &left, const TaskViewModel &right) {
         if (left.task.completed != right.task.completed) {
             return !left.task.completed && right.task.completed;
         }
@@ -435,14 +430,14 @@ void TodoPage::applyFilter()
         return left.task.title < right.task.title;
     });
 
-    QList<TaskViewItem> overdue;
-    QList<TaskViewItem> today;
-    QList<TaskViewItem> week;
-    QList<TaskViewItem> later;
-    QList<TaskViewItem> completed;
+    QList<TaskViewModel> overdue;
+    QList<TaskViewModel> today;
+    QList<TaskViewModel> week;
+    QList<TaskViewModel> later;
+    QList<TaskViewModel> completed;
 
     const QDate todayDate = QDate::currentDate();
-    for (const TaskViewItem &item : visible) {
+    for (const TaskViewModel &item : visible) {
         if (item.task.completed) {
             completed.append(item);
         } else if (item.task.isOverdue()) {
@@ -469,7 +464,7 @@ void TodoPage::applyFilter()
                                   .arg(completed.size()));
     }
 
-    auto appendSection = [this](const QString &title, const QString &accent, const QList<TaskViewItem> &items) {
+    auto appendSection = [this](const QString &title, const QString &accent, const QList<TaskViewModel> &items) {
         if (items.isEmpty()) {
             return;
         }
@@ -481,7 +476,7 @@ void TodoPage::applyFilter()
         sectionLayout->setContentsMargins(0, 0, 0, 0);
         sectionLayout->setSpacing(10);
 
-        for (const TaskViewItem &item : items) {
+        for (const TaskViewModel &item : items) {
             TaskCardWidget *card = new TaskCardWidget(item.task, sectionBody);
             sectionLayout->addWidget(card);
 
@@ -562,7 +557,7 @@ void TodoPage::applyFilter()
         headerLayout->addWidget(toggle);
         boardLayout->addWidget(header);
 
-        for (const TaskViewItem &item : completed) {
+        for (const TaskViewModel &item : completed) {
             TaskCardWidget *card = new TaskCardWidget(item.task, completedBody);
             completedLayout->addWidget(card);
 

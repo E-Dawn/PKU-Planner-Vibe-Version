@@ -1,5 +1,5 @@
 #include "configservice.h"
-#include "../models/datamanager.h"
+#include "../models/datarepository.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -32,7 +32,7 @@ ConfigService::ConfigService()
 
 void ConfigService::load()
 {
-    QString dataPath = DataManager::instance().storageDir();
+    QString dataPath = DataRepository::dataDirectory();
     QString fullPath = QDir(dataPath).absoluteFilePath("config.json");
 
     QFile file(fullPath);
@@ -89,7 +89,7 @@ void ConfigService::load()
 
 void ConfigService::save()
 {
-    QString dataPath = DataManager::instance().storageDir();
+    QString dataPath = DataRepository::dataDirectory();
     QString fullPath = QDir(dataPath).absoluteFilePath("config.json");
 
     QJsonObject obj;
@@ -161,7 +161,7 @@ void ConfigService::setDetailDrawerMode(bool drawerMode)
 QString ConfigService::getExportPath() const
 {
     if (m_exportPath.isEmpty()) {
-        return DataManager::instance().storageDir();
+        return DataRepository::dataDirectory();
     }
     return m_exportPath;
 }
@@ -192,7 +192,7 @@ void ConfigService::resetOnboarding()
 
 void ConfigService::resetAllData()
 {
-    QString dataPath = DataManager::instance().storageDir();
+    QString dataPath = DataRepository::dataDirectory();
 
     QFile coursesFile(dataPath + "/courses.json");
     if (coursesFile.exists()) {
@@ -216,7 +216,7 @@ void ConfigService::resetAllData()
 
 QString ConfigService::getDataPath() const
 {
-    return DataManager::instance().storageDir();
+    return DataRepository::dataDirectory();
 }
 
 QDate ConfigService::getSemesterStart() const

@@ -6,7 +6,7 @@
 #include <QMouseEvent>
 #include <QEvent>
 #include <QFrame>
-#include "../../services/searchservice.h"
+#include "../../models/searchresult.h"
 
 class QVBoxLayout;
 class QLabel;

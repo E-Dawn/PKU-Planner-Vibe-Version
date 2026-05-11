@@ -53,4 +53,9 @@ struct Task
     }
 };
 
+struct TaskViewModel {
+    Task task;
+    int sourceIndex;
+};
+
 #endif

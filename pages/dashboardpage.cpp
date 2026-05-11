@@ -1,89 +1,53 @@
 #include "dashboardpage.h"
-#include "../components/coursecellwidget.h"
 #include "../ui/theme.h"
+#include "../ui/sidebarwidget.h"
+#include "../components/coursecellwidget.h"
+#include "../components/ddlpreviewwidget.h"
+#include "../components/toastwidget.h"
+#include "../models/datamanager.h"
+#include "../models/course.h"
+#include "../models/task.h"
+#include "../services/reminderservice.h"
+#include "../services/configservice.h"
+#include "../widgets/coursedetail/coursedetaildrawer.h"
+#include "../widgets/search/searchpopup.h"
+#include "../dialogs/taskeditdialog.h"
+#include "../dialogs/courseeditdialog.h"
+#include "../dialogs/courseactiondialog.h"
+#include "../dialogs/confirmdialog.h"
+#include "../utils/datetimeutils.h"
 
+#include <QStackedWidget>
+#include <QScrollArea>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QLabel>
-#include <QFrame>
-#include <QProgressBar>
 #include <QPushButton>
-#include <QCheckBox>
-#include <QMessageBox>
-#include <QDialog>
-#include <QTimer>
-#include <QDateTime>
-#include <QScrollArea>
-#include <QApplication>
+#include <QComboBox>
+#include <QDate>
 #include <QDebug>
+#include <QTimer>
+#include <QPropertyAnimation>
+#include <QSequentialAnimationGroup>
+#include <QParallelAnimationGroup>
 #include <QGraphicsDropShadowEffect>
-#include <QColor>
-#include <algorithm>
-#include <vector>
-#include <utility>
-#include <QHash>
-#include <QStringList>
+#include <QInputDialog>
 #include <QFileDialog>
-#include <QFile>
-#include <QTextStream>
 #include <QJsonDocument>
-#include <QJsonArray>
 #include <QJsonObject>
-#include <QRegularExpression>
+#include <QJsonArray>
 #include <QMessageBox>
-
-#include "../models/datamanager.h"
-#include "../dialogs/confirmdialog.h"
-#include "../services/configservice.h"
-#include "../dialogs/courseeditdialog.h"
-#include "../dialogs/courseactiondialog.h"
-#include "../dialogs/taskeditdialog.h"
-#include "../dialogs/confirmdialog.h"
-#include "../components/toastwidget.h"
-#include "../components/emptystatewidget.h"
+#include <QHeaderView>
+#include <QTableWidget>
+#include <QFont>
+#include <QProgressBar>
+#include <QCheckBox>
 
 namespace {
-QString dayText(int day)
-{
-    switch (day) {
-    case 1: return "周一";
-    case 2: return "周二";
-    case 3: return "周三";
-    case 4: return "周四";
-    case 5: return "周五";
-    case 6: return "周六";
-    case 7: return "周日";
-    default: return "未设置";
-    }
-}
-
-QString scheduleLine(const Course& course)
-{
-    if (course.day < 1 || course.day > 7 || course.startPeriod <= 0 || course.endPeriod <= 0) {
-        return QString();
-    }
-
-    QString line = QString("%1 %2-%3节").arg(dayText(course.day)).arg(course.startPeriod).arg(course.endPeriod);
-    if (course.weekType == 1) {
-        line += "（单周）";
-    } else if (course.weekType == 2) {
-        line += "（双周）";
-    }
-    return line;
-}
-
-QString scheduleSummaryForGroup(const QList<Course>& courses, const QList<int>& indices)
-{
-    QStringList lines;
-    for (int index : indices) {
-        const QString line = scheduleLine(courses[index]);
-        if (!line.isEmpty() && !lines.contains(line)) {
-            lines.append(line);
-        }
-    }
-    return lines.join("\n");
-}
+using DateTimeUtils::dayText;
+using DateTimeUtils::scheduleLine;
+using DateTimeUtils::scheduleSummaryForGroup;
 }
 
 namespace {

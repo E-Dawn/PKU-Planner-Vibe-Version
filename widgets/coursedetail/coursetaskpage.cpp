@@ -21,12 +21,6 @@
 #include "../../models/datamanager.h"
 
 namespace {
-struct TaskItem
-{
-    Task task;
-    int sourceIndex = -1;
-};
-
 bool isCourseTask(const Task& task, const QString& courseName)
 {
     return !courseName.trimmed().isEmpty() && task.course == courseName;
@@ -164,12 +158,7 @@ void CourseTaskPage::renderTasks()
         delete item;
     }
 
-    struct TaskItemWithSource {
-        Task task;
-        int sourceIndex;
-    };
-
-    QList<TaskItemWithSource> items;
+    QList<TaskViewModel> items;
     const QString keyword = searchEdit ? searchEdit->text().trimmed().toLower() : QString();
     for (int i = 0; i < static_cast<int>(currentTasks.size()); ++i) {
         const Task& task = currentTasks[static_cast<size_t>(i)];
@@ -182,7 +171,7 @@ void CourseTaskPage::renderTasks()
         items.append({task, sourceIndices[static_cast<size_t>(i)]});
     }
 
-    std::sort(items.begin(), items.end(), [this](const TaskItemWithSource& left, const TaskItemWithSource& right) {
+    std::sort(items.begin(), items.end(), [this](const TaskViewModel& left, const TaskViewModel& right) {
         if (left.task.completed != right.task.completed) {
             return !left.task.completed && right.task.completed;
         }

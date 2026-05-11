@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, '**' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+
+    steps:
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Add Qt and CMake to PATH (they are pre-installed on windows-latest)
+      - name: Add Qt to PATH
+        run: echo "##[add-path]C:\Qt\6.6\msvc2022_64\bin"
+        shell: powershell
+
+      - name: Add CMake to PATH
+        run: echo "##[add-path]C:\Program Files\CMake\bin"
+        shell: powershell
+
+      # Build and run unit tests via run_build.bat
+      - name: Build and run unit tests
+        run: .\run_build.bat
+        shell: cmd
+
+      # Smoke test – launch binary and exit
+      - name: Smoke test
+        run: .\smoke_test.bat
+        shell: cmd
+
+      # Upload executable as artifact (optional)
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: PKUPlanner-exe
+          path: build\PKUPlanner.exe

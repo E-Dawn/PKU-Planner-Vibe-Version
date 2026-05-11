@@ -5,6 +5,7 @@
 #include "../ui/theme.h"
 #include "../components/emptystatewidget.h"
 #include "../widgets/dialogs/weeklysummarydialog.h"
+#include "../utils/datetimeutils.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -55,19 +56,10 @@ QFrame* makeCard(const QString &icon, const QString &title, const QString &value
     l->addStretch();
     return card;
 }
-
-QString dayText(int day) {
-    switch (day) {
-    case 1: return "周一";
-    case 2: return "周二";
-    case 3: return "周三";
-    case 4: return "周四";
-    case 5: return "周五";
-    case 6: return "周六";
-    case 7: return "周日";
-    default: return "";
-    }
 }
+
+namespace {
+using DateTimeUtils::dayText;
 }
 
 StatsPage::StatsPage(QWidget *parent)

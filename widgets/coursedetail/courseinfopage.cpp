@@ -1,5 +1,6 @@
 #include "courseinfopage.h"
 #include "../../ui/theme.h"
+#include "../../utils/datetimeutils.h"
 
 #include <QFrame>
 #include <QHBoxLayout>
@@ -17,48 +18,10 @@
 #include "../../models/datamanager.h"
 
 namespace {
-QString dayText(int day)
-{
-    switch (day) {
-    case 1: return "周一";
-    case 2: return "周二";
-    case 3: return "周三";
-    case 4: return "周四";
-    case 5: return "周五";
-    case 6: return "周六";
-    case 7: return "周日";
-    default: return "未设置";
-    }
-}
-
-QString weekTypeText(int weekType)
-{
-    switch (weekType) {
-    case 1: return "单周";
-    case 2: return "双周";
-    default: return "每周";
-    }
-}
-
-QString safeText(const QString& text, const QString& fallback)
-{
-    return text.trimmed().isEmpty() ? fallback : text;
-}
-
-QString scheduleLine(const Course& course)
-{
-    if (course.day < 1 || course.day > 7 || course.startPeriod <= 0 || course.endPeriod <= 0) {
-        return QString();
-    }
-
-    QString line = QString("%1 %2-%3节").arg(dayText(course.day)).arg(course.startPeriod).arg(course.endPeriod);
-    if (course.weekType == 1) {
-        line += "（单周）";
-    } else if (course.weekType == 2) {
-        line += "（双周）";
-    }
-    return line;
-}
+using DateTimeUtils::dayText;
+using DateTimeUtils::weekTypeText;
+using DateTimeUtils::safeText;
+using DateTimeUtils::scheduleLine;
 }
 
 CourseInfoPage::CourseInfoPage(QWidget* parent)

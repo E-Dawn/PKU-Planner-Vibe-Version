@@ -60,6 +60,7 @@ set(PROJECT_SOURCES
     components/emptystatewidget.h
     utils/pageanimator.h
     utils/pageanimator.cpp
+    utils/datetimeutils.h
     dialogs/courseeditdialog.cpp
     dialogs/courseeditdialog.h
     dialogs/courseactiondialog.cpp
@@ -68,10 +69,15 @@ set(PROJECT_SOURCES
     dialogs/taskeditdialog.h
     models/datamanager.cpp
     models/datamanager.h
+    models/datastore.cpp
+    models/datastore.h
+    models/datarepository.cpp
+    models/datarepository.h
     models/taskmodel.cpp
     models/taskmodel.h
     models/task.h
     models/course.h
+    models/searchresult.h
     widgets/coursedetail/courseheaderwidget.cpp
     widgets/coursedetail/courseheaderwidget.h
     widgets/coursedetail/coursefilepage.cpp
@@ -97,12 +103,8 @@ set(PROJECT_SOURCES
     services/mascotstateservice.cpp
     services/mascotstateservice.h
     models/mascotstate.h
-    services/dataservice.cpp
-    services/dataservice.h
     services/exportservice.cpp
     services/exportservice.h
-    services/searchservice.cpp
-    services/searchservice.h
     services/weeklysummaryservice.cpp
     services/weeklysummaryservice.h
     dialogs/confirmdialog.cpp
