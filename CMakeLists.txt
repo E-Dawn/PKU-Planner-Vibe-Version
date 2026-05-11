@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 project(PKUPlanner VERSION 0.1 LANGUAGES CXX)
 
 # 精准指向Qt6安装路径
-set(CMAKE_PREFIX_PATH "C:/Qt/6.10.0/mingw_64")
+set(CMAKE_PREFIX_PATH "C:/Qt/6.10.0/msvc2022_64")
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
