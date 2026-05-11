@@ -26,11 +26,14 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: '6.6.0'
+          # 使用 6.6.2，这是一个非常稳定的点版本
+          version: '6.6.2'
           host: 'windows'
           target: 'desktop'
-          arch: 'win64_msvc2022_64'
-          # 这个 action 会自动设置 CMAKE_PREFIX_PATH，你不用手写了
+          # 修正架构名：去掉前面的 win64_，直接使用编译器标识
+          arch: 'msvc2022_64'
+          # 强制指定模块，确保 qtbase 这种核心组件一定被包含
+          modules: 'qtcharts qtquickcontrols2'
 
       # 3. 运行你的编译脚本
       - name: Build and run unit tests
