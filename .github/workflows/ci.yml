@@ -30,10 +30,10 @@ jobs:
           aqt list-qt windows desktop
 
       - name: Install Qt
+        shell: pwsh
         run: |
-          
-          python -m aqt install-qt windows desktop 6.6.2 win64_msvc2022_64
-            --outputdir D:/Qt
+          python -m aqt install-qt windows desktop 6.6.2 win64_msvc2022_64 `
+            --outputdir "D:\Qt"
 
       - name: Build project
         shell: cmd
