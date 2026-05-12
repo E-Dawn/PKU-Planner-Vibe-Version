@@ -126,6 +126,17 @@ foreach(_root ${_QT_CANDIDATE_ROOTS})
     endif()
 endforeach()
 
+if(Qt6_DIR OR $ENV{QT6_DIR})
+    message(STATUS "[FindQtAuto] Qt6_DIR already set (CI setup detected), skipping auto-discovery.")
+    set(Qt6_DIR "$ENV{QT6_DIR}" CACHE PATH "Qt6 CMake directory" FORCE)
+    return()
+endif()
+
+if(Qt6_FOUND OR DEFINED Qt6_FOUND)
+    message(STATUS "[FindQtAuto] Qt6 already found, skipping auto-discovery.")
+    return()
+endif()
+
 # -----------------------------------------------------------------------------
 # 5. Fail with a clear message (instead of CMake's cryptic "not found")
 # -----------------------------------------------------------------------------
@@ -141,7 +152,7 @@ if(NOT _QT6_FOUND_DIR)
         "\n"
         "To fix:\n"
         "  Option A: Install Qt 6 from https://www.qt.io/download-qt-installer\n"
-        "  Option B: Set QT_ROOT=C:/path/to/Qt/6.x.x/arch   (e.g. C:/Qt/6.10.0/mingw_64)\n"
+        "  Option B: Set QT_ROOT=C:/path/to/Qt/6.x.x/arch   (e.g. C:/Qt/6.10.0/msvc2022_64)\n"
         "  Option C: Set QT_VERSION=6.10.0 to pin a specific version\n"
         "\n"
         "CMake will now abort."
