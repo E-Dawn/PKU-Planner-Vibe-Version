@@ -32,7 +32,7 @@ jobs:
       - name: Install Qt
         run: |
           
-          python -m aqt install-qt windows desktop 6.5.3 win64_msvc2022_64 `
+          python -m aqt install-qt windows desktop 6.6.2 win64_msvc2022_64
             --outputdir D:/Qt
 
       - name: Build project
