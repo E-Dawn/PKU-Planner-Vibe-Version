@@ -45,6 +45,11 @@ public:
 
     QString getDataPath() const;
 
+    QString getGeminiApiKey() const;
+    void setGeminiApiKey(const QString& key);
+    QString getDoubaoApiKey() const;
+    void setDoubaoApiKey(const QString& key);
+
     void onConfigChanged() override { emit configChanged(); }
 
 signals:
@@ -63,6 +68,8 @@ private:
     QDate m_semesterStart;
     QDate m_semesterEnd;
     QDate m_lastSummaryDate;
+    QString m_geminiApiKey;
+    QString m_doubaoApiKey;
 };
 
 #endif

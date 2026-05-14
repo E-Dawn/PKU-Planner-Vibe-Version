@@ -84,6 +84,9 @@ void ConfigService::load()
         m_lastSummaryDate = QDate::fromString(summaryStr, "yyyy-MM-dd");
     }
 
+    m_geminiApiKey = obj.value("geminiApiKey").toString("");
+    m_doubaoApiKey = obj.value("doubaoApiKey").toString("");
+
     qDebug() << "[ConfigService] Loaded config";
 }
 
@@ -102,6 +105,13 @@ void ConfigService::save()
     obj["semesterEnd"] = m_semesterEnd.toString("yyyy-MM-dd");
     if (m_lastSummaryDate.isValid()) {
         obj["lastSummaryDate"] = m_lastSummaryDate.toString("yyyy-MM-dd");
+    }
+
+    if (!m_geminiApiKey.isEmpty()) {
+        obj["geminiApiKey"] = m_geminiApiKey;
+    }
+    if (!m_doubaoApiKey.isEmpty()) {
+        obj["doubaoApiKey"] = m_doubaoApiKey;
     }
 
     QJsonDocument doc(obj);
@@ -265,4 +275,26 @@ int ConfigService::getCurrentWeek() const
 bool ConfigService::isSingleWeek() const
 {
     return getCurrentWeek() % 2 == 1;
+}
+
+QString ConfigService::getGeminiApiKey() const
+{
+    return m_geminiApiKey;
+}
+
+void ConfigService::setGeminiApiKey(const QString& key)
+{
+    m_geminiApiKey = key;
+    save();
+}
+
+QString ConfigService::getDoubaoApiKey() const
+{
+    return m_doubaoApiKey;
+}
+
+void ConfigService::setDoubaoApiKey(const QString& key)
+{
+    m_doubaoApiKey = key;
+    save();
 }

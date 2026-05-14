@@ -250,6 +250,8 @@ DashboardPage::DashboardPage(IConfigProvider *configProvider, QWidget *parent)
     connect(&DataManager::instance(), &DataManager::coursesChanged, this, &DashboardPage::updateBottomStats);
     connect(&DataManager::instance(), &DataManager::tasksChanged, this, &DashboardPage::updateBottomStats);
     connect(&DataManager::instance(), &DataManager::tasksChanged, this, &DashboardPage::updateDDLWidget);
+    connect(&DataManager::instance(), &DataManager::tasksChanged, this, &DashboardPage::updateSuggestionCard);
+    connect(&DataManager::instance(), &DataManager::coursesChanged, this, &DashboardPage::updateSuggestionCard);
 
     // Connect to config provider for semester changes
     connect(&ConfigService::instance(), &ConfigService::configChanged, this, [this](){ updateWeekInfo(false); });
@@ -569,6 +571,7 @@ QWidget* DashboardPage::createRightPanel()
     QVBoxLayout *layout = new QVBoxLayout(widget);
     layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(12);
+    rightPanelLayout = layout;
 
     // 今日课程卡
     QFrame *todayCard = new QFrame;
@@ -602,7 +605,8 @@ QWidget* DashboardPage::createRightPanel()
 
     layout->addWidget(todayCard);
     layout->addWidget(ddlCard);
-    layout->addWidget(createSuggestionCard());
+    suggestionCard = qobject_cast<QFrame*>(createSuggestionCard());
+    layout->addWidget(suggestionCard);
     layout->addStretch();
 
     return widget;
@@ -1314,6 +1318,23 @@ QWidget* DashboardPage::createSuggestionCard()
     return card;
 }
 
+void DashboardPage::updateSuggestionCard()
+{
+    if (!suggestionCard || !rightPanelLayout) return;
+
+    int index = rightPanelLayout->indexOf(suggestionCard);
+    if (index < 0) return;
+
+    QLayoutItem *item = rightPanelLayout->takeAt(index);
+    if (item && item->widget()) {
+        delete item->widget();
+    }
+    delete item;
+
+    suggestionCard = qobject_cast<QFrame*>(createSuggestionCard());
+    rightPanelLayout->insertWidget(index, suggestionCard);
+}
+
 void DashboardPage::importSchedule()
 {
     QMessageBox msgBox(this);
@@ -1519,15 +1540,127 @@ VisionModelType DashboardPage::selectVisionModel()
 
 QString DashboardPage::getModelApiKey(VisionModelType model)
 {
+    QString storedKey = (model == VisionModelType::Gemini)
+        ? ConfigService::instance().getGeminiApiKey()
+        : ConfigService::instance().getDoubaoApiKey();
+
+    if (!storedKey.isEmpty()) {
+        return storedKey;
+    }
+
     QString title = (model == VisionModelType::Gemini) ? "Gemini API Key" : "豆包 API Key";
     QString prompt = (model == VisionModelType::Gemini) ? "请输入 Gemini API Key:" : "请输入豆包 API Key(提示:api需开通mini模型):";
 
-    bool ok;
-    QString apiKey = QInputDialog::getText(this, title, prompt, QLineEdit::Password, "", &ok);
+    QDialog inputDialog(this);
+    inputDialog.setWindowTitle(title);
+    inputDialog.setFixedSize(480, 240);
+    inputDialog.setStyleSheet(QString(
+        "QDialog { background: white; border-radius: %1px; }"
+    ).arg(Theme::CARD_RADIUS));
 
-    if (!ok || apiKey.isEmpty()) {
+    QVBoxLayout* mainLayout = new QVBoxLayout(&inputDialog);
+    mainLayout->setContentsMargins(32, 28, 32, 28);
+    mainLayout->setSpacing(20);
+
+    QLabel* titleLabel = new QLabel(title, &inputDialog);
+    titleLabel->setStyleSheet(QString("font-size: 20px; font-weight: 600; color: %1;").arg(Theme::TEXT_PRIMARY));
+    mainLayout->addWidget(titleLabel);
+
+    QLabel* descLabel = new QLabel(prompt, &inputDialog);
+    descLabel->setStyleSheet(QString("font-size: 15px; color: %1;").arg(Theme::TEXT_SECONDARY));
+    mainLayout->addWidget(descLabel);
+
+    QLineEdit* input = new QLineEdit(&inputDialog);
+    input->setEchoMode(QLineEdit::Password);
+    input->setPlaceholderText("请输入 API Key");
+    input->setMinimumHeight(48);
+    input->setStyleSheet(QString(
+        "QLineEdit { "
+        "  border: 1px solid %1; border-radius: %2px; padding: 14px; "
+        "  font-size: 15px; color: %3; background: white; "
+        "} "
+        "QLineEdit:focus { border: 2px solid %4; } "
+        "QLineEdit::placeholder { color: %5; }"
+    ).arg(Theme::BORDER).arg(Theme::INPUT_RADIUS).arg(Theme::TEXT_PRIMARY)
+      .arg(Theme::PRIMARY).arg(Theme::TEXT_TERTIARY));
+    mainLayout->addWidget(input);
+
+    mainLayout->addStretch();
+
+    QHBoxLayout* btnLayout = new QHBoxLayout();
+    btnLayout->addStretch();
+
+    QPushButton* cancelBtn = new QPushButton("取消", &inputDialog);
+    cancelBtn->setCursor(Qt::PointingHandCursor);
+    cancelBtn->setMinimumWidth(100);
+    cancelBtn->setMinimumHeight(42);
+    cancelBtn->setStyleSheet(QString(
+        "QPushButton { "
+        "  background: white; color: %1; border: 1px solid %2; "
+        "  border-radius: %3px; padding: 12px 28px; font-size: 15px; "
+        "} "
+        "QPushButton:hover { background: %4; color: white; }"
+    ).arg(Theme::TEXT_SECONDARY).arg(Theme::BORDER).arg(Theme::BUTTON_RADIUS).arg(Theme::PRIMARY_LIGHT));
+
+    QPushButton* confirmBtn = new QPushButton("确认", &inputDialog);
+    confirmBtn->setCursor(Qt::PointingHandCursor);
+    confirmBtn->setDefault(true);
+    confirmBtn->setMinimumWidth(100);
+    confirmBtn->setMinimumHeight(42);
+    confirmBtn->setStyleSheet(QString(
+        "QPushButton { "
+        "  background: %1; color: white; border: none; "
+        "  border-radius: %2px; padding: 12px 28px; font-size: 15px; font-weight: 500; "
+        "} "
+        "QPushButton:hover { background: %3; }"
+    ).arg(Theme::PRIMARY).arg(Theme::BUTTON_RADIUS).arg(Theme::PRIMARY_DARK));
+
+    btnLayout->addWidget(cancelBtn);
+    btnLayout->addSpacing(16);
+    btnLayout->addWidget(confirmBtn);
+    mainLayout->addLayout(btnLayout);
+
+    connect(cancelBtn, &QPushButton::clicked, &inputDialog, &QDialog::reject);
+    connect(confirmBtn, &QPushButton::clicked, &inputDialog, &QDialog::accept);
+    connect(input, &QLineEdit::returnPressed, &inputDialog, &QDialog::accept);
+
+    if (inputDialog.exec() != QDialog::Accepted || input->text().isEmpty()) {
         return QString();
     }
+
+    QString apiKey = input->text();
+
+    QMessageBox saveMsgBox(this);
+    saveMsgBox.setWindowTitle("保存 API Key");
+    saveMsgBox.setText("是否保存 API Key 以便下次使用？");
+    saveMsgBox.setInformativeText("保存后下次导入将自动使用，无需再次输入。");
+    saveMsgBox.setIcon(QMessageBox::Question);
+    saveMsgBox.setStyleSheet(QString(
+        "QMessageBox { background: white; border-radius: %1px; }"
+        "QLabel { font-size: 14px; color: %2; padding: 8px; }"
+        "QPushButton { "
+        "  background: white; color: %2; border: 1px solid %3; "
+        "  border-radius: %4px; padding: 10px 24px; font-size: 14px; font-weight: 500; min-width: 80px; "
+        "} "
+        "QPushButton:hover { background: %5; color: white; border-color: %3; }"
+    ).arg(Theme::CARD_RADIUS).arg(Theme::TEXT_PRIMARY).arg(Theme::PRIMARY)
+      .arg(Theme::BUTTON_RADIUS).arg(Theme::PRIMARY_DARK));
+
+    QPushButton* saveBtn = saveMsgBox.addButton("保存", QMessageBox::ActionRole);
+    QPushButton* noSaveBtn = saveMsgBox.addButton("不保存", QMessageBox::ActionRole);
+    saveBtn->setCursor(Qt::PointingHandCursor);
+    noSaveBtn->setCursor(Qt::PointingHandCursor);
+
+    saveMsgBox.exec();
+
+    if (saveMsgBox.clickedButton() == saveBtn) {
+        if (model == VisionModelType::Gemini) {
+            ConfigService::instance().setGeminiApiKey(apiKey);
+        } else {
+            ConfigService::instance().setDoubaoApiKey(apiKey);
+        }
+    }
+
     return apiKey;
 }
 

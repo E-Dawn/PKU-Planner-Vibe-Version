@@ -13,6 +13,7 @@ class QLabel;
 class QProgressBar;
 class QPushButton;
 class QTimer;
+class QFrame;
 class QHBoxLayout;
 class EmptyStateWidget;
 #include <QNetworkReply>
@@ -106,11 +107,14 @@ private:
     QLabel *todayCourseValue = nullptr;
     QLabel *todayDdlValue = nullptr;
     QLabel *weekDdlValue = nullptr;
+    QFrame *suggestionCard = nullptr;
+    QVBoxLayout *rightPanelLayout = nullptr;
 
     void updateDDLWidget();
     void updateTodayCourses();
     void updateWeekInfo(bool useCurrentWeek = false);
     QWidget* createSuggestionCard();
+    void updateSuggestionCard();
 
     void importFromImage();
     VisionModelType selectVisionModel();
