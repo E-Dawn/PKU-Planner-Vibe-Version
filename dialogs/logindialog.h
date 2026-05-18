@@ -6,6 +6,7 @@
 
 class QLineEdit;
 class QCheckBox;
+class QLabel;
 
 class LoginDialog : public QDialog {
     Q_OBJECT
@@ -25,6 +26,7 @@ private:
     QLineEdit *passwordEdit;
     QLineEdit *otpEdit;
     QCheckBox *rememberCheck;
+    QLabel *otpLabel;
 };
 
 #endif // LOGINDIALOG_H

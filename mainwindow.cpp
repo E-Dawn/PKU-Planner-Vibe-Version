@@ -30,6 +30,7 @@
 #include "dialogs/logindialog.h"
 #include "services/configservice.h"
 #include "dialogs/confirmdialog.h"
+#include "ui/theme.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -176,7 +177,22 @@ void MainWindow::initPages()
 
     // Ask user whether to connect to teaching platform on startup
     QTimer::singleShot(1000, this, [this](){
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "连接教学网", "是否现在连接教学网？", QMessageBox::Yes | QMessageBox::No);
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("连接教学网");
+        msgBox.setText("是否现在连接教学网？");
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setStyleSheet(QString(
+            "QMessageBox { background: white; border-radius: %1px; }"
+            "QLabel { font-size: 14px; color: %2; padding: 8px; }"
+            "QPushButton { "
+            "  background: white; color: %2; border: 1px solid %3; "
+            "  border-radius: %4px; padding: 10px 24px; font-size: 14px; font-weight: 500; min-width: 80px; "
+            "} "
+            "QPushButton:hover { background: %3; color: white; }"
+        ).arg(Theme::CARD_RADIUS).arg(Theme::TEXT_PRIMARY).arg(Theme::PRIMARY)
+         .arg(Theme::BUTTON_RADIUS));
+        QMessageBox::StandardButton reply = (QMessageBox::StandardButton)msgBox.exec();
         if (reply == QMessageBox::Yes) {
             promptTeachingPlatformLogin();
         }
@@ -237,7 +253,21 @@ void MainWindow::promptTeachingPlatformLogin(bool importCourseAfterLogin, bool s
                 return;
             }
         }
-        QMessageBox::warning(this, "登录失败", QString("登录失败: %1").arg(err));
+        QMessageBox msgBox2(this);
+        msgBox2.setWindowTitle("登录失败");
+        msgBox2.setText(QString("登录失败: %1").arg(err));
+        msgBox2.setIcon(QMessageBox::Warning);
+        msgBox2.setStyleSheet(QString(
+            "QMessageBox { background: white; border-radius: %1px; }"
+            "QLabel { font-size: 14px; color: %2; padding: 8px; }"
+            "QPushButton { "
+            "  background: white; color: %2; border: 1px solid %3; "
+            "  border-radius: %4px; padding: 10px 24px; font-size: 14px; font-weight: 500; min-width: 80px; "
+            "} "
+            "QPushButton:hover { background: %3; color: white; }"
+        ).arg(Theme::CARD_RADIUS).arg(Theme::TEXT_PRIMARY).arg(Theme::PRIMARY)
+         .arg(Theme::BUTTON_RADIUS));
+        msgBox2.exec();
     });
     connect(teachingService, &TeachingPlatformService::todoAuthRequired, this, [this](const QString &err) {
         LoginDialog dlg(this);
@@ -245,11 +275,21 @@ void MainWindow::promptTeachingPlatformLogin(bool importCourseAfterLogin, bool s
         dlg.setPassword(ConfigService::instance().getTeachingPassword());
         dlg.setOtpVisible(true);
 
-        QMessageBox::information(
-            this,
-            "需要重新登录",
-            QString("同步教学网待办需要重新认证：\n%1").arg(err)
-        );
+        QMessageBox infoBox(this);
+        infoBox.setWindowTitle("需要重新登录");
+        infoBox.setText(QString("同步教学网待办需要重新认证：\n%1").arg(err));
+        infoBox.setIcon(QMessageBox::Information);
+        infoBox.setStyleSheet(QString(
+            "QMessageBox { background: white; border-radius: %1px; }"
+            "QLabel { font-size: 14px; color: %2; padding: 8px; }"
+            "QPushButton { "
+            "  background: white; color: %2; border: 1px solid %3; "
+            "  border-radius: %4px; padding: 10px 24px; font-size: 14px; font-weight: 500; min-width: 80px; "
+            "} "
+            "QPushButton:hover { background: %3; color: white; }"
+        ).arg(Theme::CARD_RADIUS).arg(Theme::TEXT_PRIMARY).arg(Theme::PRIMARY)
+         .arg(Theme::BUTTON_RADIUS));
+        infoBox.exec();
 
         if (dlg.exec() != QDialog::Accepted) {
             return;
