@@ -7,6 +7,7 @@
 #include "../models/course.h"
 #include "../models/task.h"
 #include <vector>
+#include <optional>
 
 class QGridLayout;
 class QLabel;
@@ -85,7 +86,7 @@ private:
 
     void renderCourses();
 
-    int getNearestDDL(const QString& courseName);
+    std::optional<int> getNearestDDL(const QString& courseName);
 
     QGridLayout *grid;
     QWidget *gridContainer;

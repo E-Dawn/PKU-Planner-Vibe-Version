@@ -1,5 +1,6 @@
 #include "dashboardpage.h"
 #include <functional>
+#include <algorithm>
 #include "../ui/theme.h"
 #include "../ui/sidebarwidget.h"
 #include "../components/coursecellwidget.h"
@@ -41,11 +42,7 @@
 #include <QSequentialAnimationGroup>
 #include <QParallelAnimationGroup>
 #include <QGraphicsDropShadowEffect>
-#include <QInputDialog>
 #include <QFileDialog>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 #include <QMessageBox>
 #include <QHeaderView>
 #include <QTableWidget>
@@ -302,17 +299,15 @@ QWidget* DashboardPage::createTopBar()
     layout->addWidget(nextBtn, 0);
     layout->addWidget(todayBtn, 0);
 
-    connect(prevBtn,&QPushButton::clicked,this,[=](){
+    connect(prevBtn,&QPushButton::clicked,this,[this](){
         currentWeek--;
         updateWeekInfo(false);
     });
-
-    connect(nextBtn,&QPushButton::clicked,this,[=](){
+    connect(nextBtn,&QPushButton::clicked,this,[this](){
         currentWeek++;
         updateWeekInfo(false);
     });
-
-    connect(todayBtn,&QPushButton::clicked,this,[=](){
+    connect(todayBtn,&QPushButton::clicked,this,[this](){
         currentWeek = realWeek;
         updateWeekInfo(false);
     });
@@ -408,7 +403,7 @@ QWidget* DashboardPage::createBottomStats()
             timeLabel = num;
             timeLabel->setStyleSheet(QString("font-size:18px; font-weight:700; color:%1; background:transparent;").arg(Theme::PRIMARY));
             QTimer *timer = new QTimer(this);
-            connect(timer,&QTimer::timeout,this,[=](){
+            connect(timer,&QTimer::timeout,this,[this](){
                 timeLabel->setText(QDateTime::currentDateTime().toString("yyyy-MM-dd\nhh:mm:ss"));
                 updateTodayCourses();
             });
@@ -854,20 +849,20 @@ for(int row=0; row<12; row++)
     }
 }
 
-int DashboardPage::getNearestDDL(const QString& courseName)
+std::optional<int> DashboardPage::getNearestDDL(const QString& courseName)
 {
-    int minDays = 9999;
+    std::optional<int> result;
     const auto tasks = DataManager::instance().tasks();
 
     for (const Task &task : tasks) {
         if (task.course == courseName && !task.completed) {
             const int daysLeft = QDateTime::currentDateTime().daysTo(task.deadline);
-            if (daysLeft < minDays) {
-                minDays = daysLeft;
+            if (!result.has_value() || daysLeft < result.value()) {
+                result = daysLeft;
             }
         }
     }
-    return minDays == 9999 ? -999 : minDays;
+    return result;
 }
 
 void DashboardPage::renderCourses()
@@ -923,7 +918,7 @@ void DashboardPage::renderCourses()
         if (c.weekType == 1 && currentWeek % 2 == 0) continue;
         if (c.weekType == 2 && currentWeek % 2 == 1) continue;
 
-        const int daysLeft = getNearestDDL(c.name);
+        auto daysLeft = getNearestDDL(c.name);
         CourseCellWidget *cell = new CourseCellWidget(c.startPeriod, c.day);
         cell->setCourse(c.name, c.location, c.teacher, i, daysLeft);
 
@@ -1749,7 +1744,8 @@ void GeminiParser::parseImage(
     QByteArray imageData = file.readAll();
     file.close();
 
-    QUrl url(QString("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=%1").arg(apiKey));
+    QUrl url(QString("https://generativelanguage.googleapis.com/v1beta/models/%1:generateContent?key=%2")
+        .arg(ConfigService::instance().geminiModel()).arg(apiKey));
 
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -1839,7 +1835,7 @@ void DoubaoParser::parseImage(
     QByteArray imageData = file.readAll();
     file.close();
 
-    QUrl url("https://ark.cn-beijing.volces.com/api/v3/chat/completions");
+    QUrl url(ConfigService::instance().doubaoApiUrl());
 
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -1871,7 +1867,7 @@ void DoubaoParser::parseImage(
     messages.append(message);
 
     QJsonObject root;
-    root["model"] = "doubao-seed-2-0-mini-260428";
+    root["model"] = ConfigService::instance().doubaoModel();
     root["messages"] = messages;
 
     QByteArray jsonData = QJsonDocument(root).toJson(QJsonDocument::Compact);
@@ -2005,6 +2001,26 @@ void DashboardPage::onVisionReplyFinished(QNetworkReply* reply)
             importedCourses.append(c);
         }
     }
+
+    // 合并相邻同名课程
+    std::sort(importedCourses.begin(), importedCourses.end(), [](const Course &a, const Course &b) {
+        if (a.day != b.day) return a.day < b.day;
+        return a.startPeriod < b.startPeriod;
+    });
+    QList<Course> merged;
+    for (const Course &c : importedCourses) {
+        if (!merged.isEmpty()) {
+            Course &last = merged.last();
+            if (last.day == c.day && last.name == c.name && last.endPeriod + 1 >= c.startPeriod) {
+                last.endPeriod = qMax(last.endPeriod, c.endPeriod);
+                if (c.teacher.length() > last.teacher.length()) last.teacher = c.teacher;
+                if (c.location.length() > last.location.length()) last.location = c.location;
+                continue;
+            }
+        }
+        merged.append(c);
+    }
+    importedCourses = merged;
 
     if (importedCourses.isEmpty()) {
         QMessageBox::warning(this, "导入失败", "未找到有效的课程数据");

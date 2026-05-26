@@ -10,6 +10,7 @@
 #include <QDebug>
 #include <QSaveFile>
 #include <QDateTime>
+#include <QByteArray>
 
 ConfigService& ConfigService::instance()
 {
@@ -23,13 +24,27 @@ ConfigService::ConfigService()
     , m_reminderHours(24)
     , m_detailDrawerMode(true)
     , m_onboardingShown(false)
-    , m_semesterStart(QDate(2026, 3, 1))
-    , m_semesterEnd(QDate(2026, 6, 28))
+    , m_semesterStart()
+    , m_semesterEnd()
     , m_lastSummaryDate()
     , m_teachingUsername("")
     , m_teachingPassword("")
+    , m_geminiModel("gemini-2.5-flash")
+    , m_doubaoApiUrl("https://ark.cn-beijing.volces.com/api/v3/chat/completions")
+    , m_doubaoModel("doubao-seed-2-0-mini-260428")
 {
     load();
+    // 默认学期：根据当前月份自动推算
+    if (!m_semesterStart.isValid() || !m_semesterEnd.isValid()) {
+        int month = QDate::currentDate().month();
+        if (month >= 2 && month <= 7) {
+            m_semesterStart = QDate(QDate::currentDate().year(), 3, 1);
+            m_semesterEnd = QDate(QDate::currentDate().year(), 6, 28);
+        } else {
+            m_semesterStart = QDate(QDate::currentDate().year(), 9, 1);
+            m_semesterEnd = QDate(QDate::currentDate().year() + 1, 1, 15);
+        }
+    }
 }
 
 void ConfigService::load()
@@ -72,7 +87,11 @@ void ConfigService::load()
     m_exportPath = obj.value("exportPath").toString("");
     m_onboardingShown = obj.value("onboardingShown").toBool(false);
     m_teachingUsername = obj.value("teachingUsername").toString("");
-    m_teachingPassword = obj.value("teachingPassword").toString("");
+    {
+        QString raw = obj.value("teachingPassword").toString("");
+        QByteArray decoded = QByteArray::fromBase64(raw.toUtf8());
+        m_teachingPassword = decoded.isEmpty() ? raw : QString::fromUtf8(decoded);
+    }
 
     QString startStr = obj.value("semesterStart").toString();
     QString endStr = obj.value("semesterEnd").toString();
@@ -87,6 +106,10 @@ void ConfigService::load()
     if (!summaryStr.isEmpty()) {
         m_lastSummaryDate = QDate::fromString(summaryStr, "yyyy-MM-dd");
     }
+
+    m_geminiModel = obj.value("geminiModel").toString(m_geminiModel);
+    m_doubaoApiUrl = obj.value("doubaoApiUrl").toString(m_doubaoApiUrl);
+    m_doubaoModel = obj.value("doubaoModel").toString(m_doubaoModel);
 
     qDebug() << "[ConfigService] Loaded config";
 }
@@ -108,7 +131,10 @@ void ConfigService::save()
         obj["lastSummaryDate"] = m_lastSummaryDate.toString("yyyy-MM-dd");
     }
     obj["teachingUsername"] = m_teachingUsername;
-    obj["teachingPassword"] = m_teachingPassword;
+    obj["teachingPassword"] = QString::fromUtf8(m_teachingPassword.toUtf8().toBase64());
+    obj["geminiModel"] = m_geminiModel;
+    obj["doubaoApiUrl"] = m_doubaoApiUrl;
+    obj["doubaoModel"] = m_doubaoModel;
 
     QJsonDocument doc(obj);
 

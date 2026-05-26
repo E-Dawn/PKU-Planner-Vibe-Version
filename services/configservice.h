@@ -49,6 +49,14 @@ public:
     void setTeachingUsername(const QString &u) { m_teachingUsername = u; save(); emit configChanged(); }
     void setTeachingPassword(const QString &p) { m_teachingPassword = p; save(); emit configChanged(); }
 
+    QString geminiModel() const { return m_geminiModel; }
+    void setGeminiModel(const QString &v) { m_geminiModel = v; save(); }
+
+    QString doubaoApiUrl() const { return m_doubaoApiUrl; }
+    void setDoubaoApiUrl(const QString &v) { m_doubaoApiUrl = v; save(); }
+
+    QString doubaoModel() const { return m_doubaoModel; }
+    void setDoubaoModel(const QString &v) { m_doubaoModel = v; save(); }
 
     void onConfigChanged() override { emit configChanged(); }
 
@@ -70,6 +78,9 @@ private:
     QDate m_lastSummaryDate;
     QString m_teachingUsername;
     QString m_teachingPassword;
+    QString m_geminiModel;
+    QString m_doubaoApiUrl;
+    QString m_doubaoModel;
 };
 
 #endif

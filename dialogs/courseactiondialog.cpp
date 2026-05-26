@@ -51,17 +51,17 @@ CourseActionDialog::CourseActionDialog(QWidget *parent)
     layout->addWidget(deleteBtn);
     layout->addWidget(ddlBtn);
 
-    connect(editBtn,&QPushButton::clicked,[=](){
+    connect(editBtn,&QPushButton::clicked,[this](){
         editChoice=true;
         accept();
     });
 
-    connect(deleteBtn,&QPushButton::clicked,[=](){
+    connect(deleteBtn,&QPushButton::clicked,[this](){
         deleteChoice=true;
         accept();
     });
 
-    connect(ddlBtn,&QPushButton::clicked,[=](){
+    connect(ddlBtn,&QPushButton::clicked,[this](){
         ddlChoice=true;
         accept();
     });
