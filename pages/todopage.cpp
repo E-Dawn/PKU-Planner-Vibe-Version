@@ -285,7 +285,6 @@ QWidget* TodoPage::createFilterBar()
                 subcontrol-origin: padding;
             }
             QComboBox::down-arrow {
-                image: url(:/icons/dropdown_arrow.png);
                 width: 10px;
                 height: 10px;
             }

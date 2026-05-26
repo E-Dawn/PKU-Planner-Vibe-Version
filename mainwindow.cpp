@@ -26,6 +26,7 @@
 #include "services/weeklysummaryservice.h"
 #include "services/teachingplatformservice.h"
 #include <QInputDialog>
+#include <algorithm>
 #include "components/toastwidget.h"
 #include "dialogs/logindialog.h"
 #include "services/configservice.h"
@@ -240,22 +241,12 @@ void MainWindow::promptTeachingPlatformLogin(bool importCourseAfterLogin, bool s
     connect(teachingService, &TeachingPlatformService::courseTableFetched, this, &MainWindow::handleCourseTableFetched);
     connect(teachingService, &TeachingPlatformService::courseTableFetchFailed, this, &MainWindow::handleCourseTableFetchFailed);
     connect(teachingService, &TeachingPlatformService::loginFailed, this, [this, username, password](const QString &err){
-        // if failure indicates OTP required, prompt for OTP and retry
         QString lerr = err.toLower();
-        if (lerr.contains("otp") || lerr.contains("e05")) {
-            LoginDialog otpDlg(this);
-            otpDlg.setUsername(username);
-            otpDlg.setPassword(password);
-            otpDlg.setOtpVisible(true);
-            if (otpDlg.exec() == QDialog::Accepted) {
-                QString otp2 = otpDlg.otp();
-                teachingService->login(username, password, otp2);
-                return;
-            }
-        }
+        bool otpRelated = lerr.contains("otp") || lerr.contains("e05");
+
         QMessageBox msgBox2(this);
         msgBox2.setWindowTitle("登录失败");
-        msgBox2.setText(QString("登录失败: %1").arg(err));
+        msgBox2.setText(QString("登录失败: %1%2").arg(err).arg(otpRelated ? "" : "\n\n是否重新输入账号密码？"));
         msgBox2.setIcon(QMessageBox::Warning);
         msgBox2.setStyleSheet(QString(
             "QMessageBox { background: white; border-radius: %1px; }"
@@ -267,7 +258,22 @@ void MainWindow::promptTeachingPlatformLogin(bool importCourseAfterLogin, bool s
             "QPushButton:hover { background: %3; color: white; }"
         ).arg(Theme::CARD_RADIUS).arg(Theme::TEXT_PRIMARY).arg(Theme::PRIMARY)
          .arg(Theme::BUTTON_RADIUS));
+        if (!otpRelated) {
+            msgBox2.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            msgBox2.button(QMessageBox::Yes)->setText("重新输入");
+            msgBox2.button(QMessageBox::No)->setText("取消");
+        }
         msgBox2.exec();
+
+        if (otpRelated || msgBox2.clickedButton() == msgBox2.button(QMessageBox::Yes)) {
+            LoginDialog retryDlg(this);
+            retryDlg.setUsername(username);
+            retryDlg.setPassword(password);
+            retryDlg.setOtpVisible(otpRelated);
+            if (retryDlg.exec() == QDialog::Accepted) {
+                teachingService->login(retryDlg.username(), retryDlg.password(), retryDlg.otp());
+            }
+        }
     });
     connect(teachingService, &TeachingPlatformService::todoAuthRequired, this, [this](const QString &err) {
         LoginDialog dlg(this);
@@ -522,6 +528,26 @@ void MainWindow::handleCourseTableFetched(const QJsonObject &data)
             imported.append(c);
         }
     }
+
+    // 合并相邻同名课程（教学网返回每节课一个slot，需合并为连续色块）
+    std::sort(imported.begin(), imported.end(), [](const Course &a, const Course &b) {
+        if (a.day != b.day) return a.day < b.day;
+        return a.startPeriod < b.startPeriod;
+    });
+    QList<Course> merged;
+    for (const Course &c : imported) {
+        if (!merged.isEmpty()) {
+            Course &last = merged.last();
+            if (last.day == c.day && last.name == c.name && last.endPeriod + 1 >= c.startPeriod) {
+                last.endPeriod = qMax(last.endPeriod, c.endPeriod);
+                if (c.teacher.length() > last.teacher.length()) last.teacher = c.teacher;
+                if (c.location.length() > last.location.length()) last.location = c.location;
+                continue;
+            }
+        }
+        merged.append(c);
+    }
+    imported = merged;
 
     if (imported.isEmpty()) {
         QMessageBox::warning(this, "导入失败", "未解析到有效课程");
