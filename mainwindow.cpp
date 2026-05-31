@@ -408,14 +408,22 @@ void MainWindow::onSearchCourseRequested(const QString& courseName)
     }
 }
 
-void MainWindow::onSearchTaskRequested(int taskIndex)
+void MainWindow::onSearchTaskRequested(const QString& courseAndTitle)
 {
     PageAnimator::slideToIndex(stack, 1);
     if (sidebar) {
         sidebar->setActivePage(1);
     }
     if (todoPage) {
-        QMetaObject::invokeMethod(todoPage, "highlightTask", Qt::QueuedConnection, Q_ARG(int, taskIndex));
+        // Find task by course+title and highlight it
+        const QList<Task> tasks = DataManager::instance().tasks();
+        for (int i = 0; i < tasks.size(); ++i) {
+            if (tasks[i].course == courseAndTitle.section("::", 0, 0) &&
+                tasks[i].title == courseAndTitle.section("::", 1)) {
+                QMetaObject::invokeMethod(todoPage, "highlightTask", Qt::QueuedConnection, Q_ARG(int, i));
+                break;
+            }
+        }
     }
 }
 
@@ -503,7 +511,13 @@ void MainWindow::handleCourseTableFetched(const QJsonObject &data)
             if (rawName.trimmed().isEmpty()) continue;
 
             Course c;
-            c.name = rawName.split("(主)").first().split("(辅双)").first().trimmed();
+            // Parse weekType from rawName before stripping markers
+            if (rawName.contains("(辅双)")) {
+                c.weekType = 2; // 双周
+            } else if (rawName.contains("(辅单)") || rawName.contains("(单)") || rawName.contains("单周")) {
+                c.weekType = 1; // 单周
+            }
+            c.name = rawName.split("(主)").first().split("(辅双)").first().split("(辅单)").first().split("(单)").first().trimmed();
             c.day = d + 1;
             c.startPeriod = slotNum;
             c.endPeriod = slotNum;
@@ -542,6 +556,12 @@ void MainWindow::handleCourseTableFetched(const QJsonObject &data)
                 last.endPeriod = qMax(last.endPeriod, c.endPeriod);
                 if (c.teacher.length() > last.teacher.length()) last.teacher = c.teacher;
                 if (c.location.length() > last.location.length()) last.location = c.location;
+                // 单双周冲突：同一门课既有单周又有双周 → 每周
+                if (last.weekType != 0 && c.weekType != 0 && last.weekType != c.weekType) {
+                    last.weekType = 0;
+                } else if (last.weekType == 0 && c.weekType != 0) {
+                    last.weekType = c.weekType;
+                }
                 continue;
             }
         }

@@ -425,10 +425,15 @@ void DashboardPage::updateBottomStats()
     const QList<Task> tasks = DataManager::instance().tasks();
     const QDate today = QDate::currentDate();
 
-    int currentYear = 0;
     const int displayWeek = currentWeek;
     const bool isSingle = realWeek % 2 == 1;
     const int displayWeekday = today.dayOfWeek();
+
+    // Compute the year for the displayed week (for 本周DDL comparison)
+    QDate semesterStart = ConfigService::instance().getSemesterStart();
+    int displayYear = semesterStart.isValid()
+        ? semesterStart.addDays((displayWeek - 1) * 7).year()
+        : today.year();
 
     int todayCourseCount = 0;
     for (const Course &course : courses) {
@@ -459,7 +464,7 @@ void DashboardPage::updateBottomStats()
 
         int deadlineYear = 0;
         const int deadlineWeek = deadlineDate.weekNumber(&deadlineYear);
-        if (displayWeek == deadlineWeek && currentYear == deadlineYear) {
+        if (displayWeek == deadlineWeek && displayYear == deadlineYear) {
             ++weekDdlCount;
         }
     }

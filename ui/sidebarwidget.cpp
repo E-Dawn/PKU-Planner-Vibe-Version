@@ -100,15 +100,15 @@ SidebarWidget::SidebarWidget(QWidget *parent)
     btnConnect = new QPushButton("连接教学网");
     QString connectStyle = QString(R"(
         QPushButton {
-            background: transparent;
-            border: 1px dashed rgba(255,255,255,0.18);
+            background: #C62828;
+            border: none;
             border-radius: 12px;
             padding: 10px;
             color: white;
             font-weight: 600;
         }
         QPushButton:hover {
-            background: rgba(255,255,255,0.04);
+            background: #B71C1C;
         }
     )");
     btnConnect->setStyleSheet(connectStyle);
