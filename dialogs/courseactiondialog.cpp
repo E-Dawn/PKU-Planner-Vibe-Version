@@ -44,12 +44,14 @@ CourseActionDialog::CourseActionDialog(QWidget *parent)
     QPushButton *editBtn=new QPushButton("编辑课程");
     QPushButton *deleteBtn=new QPushButton("删除课程");
     QPushButton *ddlBtn=new QPushButton("添加DDL");
+    QPushButton *cancelBtn=new QPushButton("取消");
 
     layout->addWidget(title);
     layout->addSpacing(20);
     layout->addWidget(editBtn);
     layout->addWidget(deleteBtn);
     layout->addWidget(ddlBtn);
+    layout->addWidget(cancelBtn);
 
     connect(editBtn,&QPushButton::clicked,[this](){
         editChoice=true;

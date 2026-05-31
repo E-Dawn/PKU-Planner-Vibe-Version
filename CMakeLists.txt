@@ -142,3 +142,21 @@ else()
 endif()
 
 qt_finalize_executable(PKUPlanner)
+
+# =============================================================================
+# Smoke Tests
+# =============================================================================
+find_package(Qt6 COMPONENTS Test)
+if(Qt6Test_FOUND)
+    enable_testing()
+
+    add_executable(smoke_test
+        tests/smoke_test.cpp
+        models/datarepository.cpp
+        models/taskmodel.cpp
+        services/exportservice.cpp
+    )
+    target_link_libraries(smoke_test PRIVATE Qt6::Widgets Qt6::Network Qt6::Test)
+    target_include_directories(smoke_test PRIVATE ${CMAKE_SOURCE_DIR})
+    add_test(NAME smoke_test COMMAND smoke_test)
+endif()
