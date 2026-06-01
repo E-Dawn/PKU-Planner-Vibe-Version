@@ -32,6 +32,11 @@ ConfigService::ConfigService()
     , m_geminiModel("gemini-2.5-flash")
     , m_doubaoApiUrl("https://ark.cn-beijing.volces.com/api/v3/chat/completions")
     , m_doubaoModel("doubao-seed-2-0-mini-260428")
+    , m_geminiApiKey("")
+    , m_doubaoApiKey("")
+    , m_deepseekApiUrl("https://api.deepseek.com/chat/completions")
+    , m_deepseekModel("deepseek-chat")
+    , m_deepseekApiKey("")
 {
     load();
     // 默认学期：根据当前月份自动推算
@@ -110,6 +115,11 @@ void ConfigService::load()
     m_geminiModel = obj.value("geminiModel").toString(m_geminiModel);
     m_doubaoApiUrl = obj.value("doubaoApiUrl").toString(m_doubaoApiUrl);
     m_doubaoModel = obj.value("doubaoModel").toString(m_doubaoModel);
+    m_geminiApiKey = obj.value("geminiApiKey").toString(m_geminiApiKey);
+    m_doubaoApiKey = obj.value("doubaoApiKey").toString(m_doubaoApiKey);
+    m_deepseekApiUrl = obj.value("deepseekApiUrl").toString(m_deepseekApiUrl);
+    m_deepseekModel = obj.value("deepseekModel").toString(m_deepseekModel);
+    m_deepseekApiKey = obj.value("deepseekApiKey").toString(m_deepseekApiKey);
 
     qDebug() << "[ConfigService] Loaded config";
 }
@@ -135,6 +145,11 @@ void ConfigService::save()
     obj["geminiModel"] = m_geminiModel;
     obj["doubaoApiUrl"] = m_doubaoApiUrl;
     obj["doubaoModel"] = m_doubaoModel;
+    obj["geminiApiKey"] = m_geminiApiKey;
+    obj["doubaoApiKey"] = m_doubaoApiKey;
+    obj["deepseekApiUrl"] = m_deepseekApiUrl;
+    obj["deepseekModel"] = m_deepseekModel;
+    obj["deepseekApiKey"] = m_deepseekApiKey;
 
     QJsonDocument doc(obj);
 
