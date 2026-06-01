@@ -971,21 +971,7 @@ void SettingsPage::editSemester()
 
 void SettingsPage::openDocs()
 {
-    QString appPath = QCoreApplication::applicationDirPath();
-    QString readmePath = QDir(appPath).absoluteFilePath("README.md");
-
-    if (!QFile::exists(readmePath)) {
-        readmePath = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("..") + "/README.md";
-    }
-    if (!QFile::exists(readmePath)) {
-        readmePath = QCoreApplication::applicationDirPath() + "/README.md";
-    }
-
-    if (QFile::exists(readmePath)) {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(readmePath));
-    } else {
-        QMessageBox::information(this, "提示", "使用说明文档未找到，请访问项目主页获取帮助");
-    }
+    QDesktopServices::openUrl(QUrl("https://github.com/Logic61/PKU-Planner/blob/main/README.md"));
 }
 
 void SettingsPage::backupData()
@@ -1063,7 +1049,7 @@ void SettingsPage::factoryReset()
 
 void SettingsPage::openFeedback()
 {
-    QDesktopServices::openUrl(QUrl("https://github.com/Logic61/PKU-Planner-Vibe-Version/issues"));
+    QDesktopServices::openUrl(QUrl("https://github.com/Logic61/PKU-Planner/issues"));
 }
 
 void SettingsPage::updateSemesterDisplay()

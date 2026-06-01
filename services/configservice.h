@@ -58,6 +58,21 @@ public:
     QString doubaoModel() const { return m_doubaoModel; }
     void setDoubaoModel(const QString &v) { m_doubaoModel = v; save(); }
 
+    QString geminiApiKey() const { return m_geminiApiKey; }
+    void setGeminiApiKey(const QString &v) { m_geminiApiKey = v; save(); emit configChanged(); }
+
+    QString doubaoApiKey() const { return m_doubaoApiKey; }
+    void setDoubaoApiKey(const QString &v) { m_doubaoApiKey = v; save(); emit configChanged(); }
+
+    QString deepseekApiUrl() const { return m_deepseekApiUrl; }
+    void setDeepseekApiUrl(const QString &v) { m_deepseekApiUrl = v; save(); }
+
+    QString deepseekModel() const { return m_deepseekModel; }
+    void setDeepseekModel(const QString &v) { m_deepseekModel = v; save(); }
+
+    QString deepseekApiKey() const { return m_deepseekApiKey; }
+    void setDeepseekApiKey(const QString &v) { m_deepseekApiKey = v; save(); emit configChanged(); }
+
     void onConfigChanged() override { emit configChanged(); }
 
 signals:
@@ -81,6 +96,11 @@ private:
     QString m_geminiModel;
     QString m_doubaoApiUrl;
     QString m_doubaoModel;
+    QString m_geminiApiKey;
+    QString m_doubaoApiKey;
+    QString m_deepseekApiUrl;
+    QString m_deepseekModel;
+    QString m_deepseekApiKey;
 };
 
 #endif
